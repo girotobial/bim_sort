@@ -12,16 +12,31 @@ pub struct DataSource {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-struct ConnectionDetails {
-    protocol: String,
-    address: Address,
+#[serde(tag = "protocol")]
+enum ConnectionDetails {
+    #[serde(rename = "document-db")]
+    DocumentDb { address: Address },
+
+    #[serde(rename = "tds")]
+    Tds {
+        address: Address,
+        authentication: Option<String>,
+        query: Option<String>,
+    },
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-struct Address {
-    url: Option<String>,
-    database: Option<String>,
-    collection: Option<String>,
+#[serde(untagged)]
+enum Address {
+    DocumentDb {
+        url: String,
+        database: Option<String>,
+        collection: Option<String>,
+    },
+    Tds {
+        server: String,
+        database: String,
+    },
 }
 
 #[derive(Serialize, Deserialize, Debug)]
