@@ -1,7 +1,7 @@
 mod bim;
-mod datasources;
+mod datasource;
 mod model;
 
 pub use bim::BimFile;
-pub use datasources::DataSource;
+pub use datasource::DataSource;
 pub use model::Model;
