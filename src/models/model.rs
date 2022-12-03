@@ -1,4 +1,5 @@
-use super::DataSource;
+use super::datasource::DataSource;
+use super::table::Table;
 
 use serde::{Deserialize, Serialize};
 
@@ -8,4 +9,5 @@ pub struct Model {
     culture: String,
     discourage_implicit_measures: bool,
     data_sources: Vec<DataSource>,
+    tables: Vec<Table>,
 }
