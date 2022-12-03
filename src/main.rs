@@ -7,14 +7,20 @@ use std::str::FromStr;
 use io::{read_bim_file, write_bim_file};
 
 fn main() -> io::Result<()> {
+    use crate::models::table::ColumnAttributes;
     let in_file = std::path::PathBuf::from_str("example.json").unwrap();
-    let out_file = std::path::PathBuf::from_str("datasources_new.json").unwrap();
+    let out_file = std::path::PathBuf::from_str("example_copy.json").unwrap();
 
-    let res = read_bim_file(&in_file)?;
+    let bim = read_bim_file(&in_file)?;
 
-    write_bim_file(&res, &out_file)?;
+    write_bim_file(&bim, &out_file)?;
 
-    println!("{:?}", res);
+    for table in bim.model.tables.iter() {
+        println!("{}", table.name);
+        for column in table.columns.iter() {
+            println!("  |-{} | {}", column.name(), column.data_type());
+        }
+    }
 
     Ok(())
 }
