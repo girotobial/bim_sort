@@ -1,5 +1,9 @@
 use serde::{Deserialize, Serialize};
 
+pub use column::ColumnType;
+pub use expression::{Expression, Expressive};
+pub use partition::{Partition, Source};
+
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct Table {
@@ -8,7 +12,7 @@ pub struct Table {
     #[serde(default = "false_", skip_serializing_if = "is_false")]
     is_hidden: bool,
     columns: Vec<column::ColumnType>,
-    // partitions: Vec<Partition>,
+    partitions: Vec<Partition>,
 }
 
 mod column {
@@ -156,8 +160,8 @@ mod expression {
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 struct Annotation {
-    name: String,
-    value: String,
+    pub name: String,
+    pub value: String,
 }
 
 fn false_() -> bool {
@@ -173,14 +177,17 @@ fn is_none<T>(option: &Option<T>) -> bool {
 }
 
 mod partition {
-    use super::expression::Expression;
+    use super::expression::{Expression, Expressive};
+    use super::is_none;
     use super::{Deserialize, Serialize};
 
     #[derive(Serialize, Deserialize, Debug)]
     #[serde(rename_all = "camelCase")]
     pub struct Partition {
         pub name: String,
-        pub data_view: String,
+        #[serde(skip_serializing_if = "is_none")]
+        pub data_view: Option<String>,
+
         pub source: Source,
     }
 
@@ -189,6 +196,17 @@ mod partition {
     pub struct Source {
         #[serde(rename = "type")]
         pub type_: String,
-        expression: Expression,
+
+        #[serde(skip_serializing_if = "is_none")]
+        expression: Option<Expression>,
+    }
+
+    impl Expressive for Source {
+        fn expression(&self) -> Option<String> {
+            match &self.expression {
+                Some(e) => Some(e.as_string()),
+                None => None,
+            }
+        }
     }
 }
