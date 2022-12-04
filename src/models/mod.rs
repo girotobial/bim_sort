@@ -1,3 +1,4 @@
+mod annotations;
 mod bim;
 mod datasource;
 mod expression;

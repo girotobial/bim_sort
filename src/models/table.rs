@@ -2,7 +2,8 @@ use serde::{Deserialize, Serialize};
 
 pub use self::column::{Column, ColumnAttributes};
 pub use self::partition::{Partition, Source};
-use crate::models::expression;
+use super::annotations::Annotation;
+use super::expression::{Expression, Expressive};
 
 use self::measure::Measure;
 use super::skip_if::{false_, is_false, is_none};
@@ -20,8 +21,8 @@ pub struct Table {
 }
 
 mod column {
-    use super::expression::{Expression, Expressive};
     use super::{is_none, Annotation};
+    use super::{Expression, Expressive};
     use serde::{Deserialize, Serialize};
 
     #[derive(Serialize, Deserialize, Debug)]
@@ -201,13 +202,6 @@ mod column {
             assert_eq!(column.expression().unwrap(), expected_expression);
         }
     }
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-#[serde(rename_all = "camelCase")]
-pub struct Annotation {
-    pub name: String,
-    pub value: String,
 }
 
 mod partition {
