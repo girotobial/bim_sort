@@ -5,7 +5,7 @@ use std::path::PathBuf;
 
 use serde_json;
 
-use crate::models::BimFile;
+use crate::models::prelude::BimFile;
 
 pub fn read_bim_file(path: &PathBuf) -> io::Result<BimFile> {
     let data = fs::read_to_string(path)?;

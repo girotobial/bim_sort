@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use super::Model;
+use super::prelude::Model;
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]

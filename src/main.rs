@@ -7,7 +7,6 @@ use std::str::FromStr;
 use io::{read_bim_file, write_bim_file};
 
 fn main() -> io::Result<()> {
-    use crate::models::table::ColumnAttributes;
     let in_file = std::path::PathBuf::from_str("example.json").unwrap();
     let out_file = std::path::PathBuf::from_str("example_copy.json").unwrap();
 

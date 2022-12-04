@@ -1,8 +1,8 @@
 use serde::{Deserialize, Serialize};
 
 pub use self::column::{Column, ColumnAttributes};
-pub use self::expression::Expressive;
 pub use self::partition::{Partition, Source};
+use crate::models::expression;
 
 use self::measure::Measure;
 use super::skip_if::{false_, is_false, is_none};
@@ -199,30 +199,6 @@ mod column {
 
             let column: Column = serde_json::from_str(&column_content).unwrap();
             assert_eq!(column.expression().unwrap(), expected_expression);
-        }
-    }
-}
-
-mod expression {
-    use serde::{Deserialize, Serialize};
-
-    #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
-    #[serde(untagged)]
-    pub enum Expression {
-        Vec(Vec<String>),
-        String(String),
-    }
-
-    pub trait Expressive {
-        fn expression(&self) -> Option<String>;
-    }
-
-    impl Expression {
-        pub fn as_string(&self) -> String {
-            match self {
-                Expression::Vec(v) => v.join("\n"),
-                Expression::String(s) => s.clone(),
-            }
         }
     }
 }
