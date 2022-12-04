@@ -162,9 +162,8 @@ mod column {
 
     #[cfg(test)]
     mod tests {
-        use crate::models::table::expression::Expressive;
-
         use super::Column;
+        use super::Expressive;
         use serde_json;
 
         #[test]
@@ -205,9 +204,9 @@ mod column {
 }
 
 mod partition {
-    use super::expression::{Expression, Expressive};
     use super::is_none;
     use super::{Deserialize, Serialize};
+    use super::{Expression, Expressive};
 
     #[derive(Serialize, Deserialize, Debug)]
     #[serde(rename_all = "camelCase")]
@@ -240,8 +239,8 @@ mod partition {
 }
 
 mod measure {
-    use super::expression::{Expression, Expressive};
     use super::{Deserialize, Serialize};
+    use super::{Expression, Expressive};
 
     #[derive(Serialize, Deserialize, Debug)]
     #[serde(rename_all = "camelCase")]
