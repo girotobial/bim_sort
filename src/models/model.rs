@@ -1,5 +1,5 @@
-use super::datasource::DataSource;
 use super::table::Table;
+use super::{datasource::DataSource, relationship::Relationship};
 
 use serde::{Deserialize, Serialize};
 
@@ -10,4 +10,5 @@ pub struct Model {
     pub discourage_implicit_measures: bool,
     pub data_sources: Vec<DataSource>,
     pub tables: Vec<Table>,
+    pub relationships: Vec<Relationship>,
 }

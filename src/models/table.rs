@@ -5,6 +5,7 @@ pub use self::expression::Expressive;
 pub use self::partition::{Partition, Source};
 
 use self::measure::Measure;
+use super::skip_if::{false_, is_false, is_none};
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
@@ -219,7 +220,7 @@ mod expression {
     impl Expression {
         pub fn as_string(&self) -> String {
             match self {
-                Expression::Vec(contents) => contents.join("\n"),
+                Expression::Vec(v) => v.join("\n"),
                 Expression::String(s) => s.clone(),
             }
         }
@@ -231,18 +232,6 @@ mod expression {
 pub struct Annotation {
     pub name: String,
     pub value: String,
-}
-
-fn false_() -> bool {
-    false
-}
-
-fn is_false(x: &bool) -> bool {
-    !x
-}
-
-fn is_none<T>(option: &Option<T>) -> bool {
-    option.is_none()
 }
 
 mod partition {
