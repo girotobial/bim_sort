@@ -1,5 +1,5 @@
 use super::annotations::Annotation;
-use super::expression::Expression;
+use super::expression::ModelExpression;
 use super::table::Table;
 use super::{datasource::DataSource, relationship::Relationship, roles::Role};
 
@@ -14,6 +14,6 @@ pub struct Model {
     pub tables: Vec<Table>,
     pub relationships: Vec<Relationship>,
     pub roles: Vec<Role>,
-    pub expressions: Vec<Expression>,
+    pub expressions: Vec<ModelExpression>,
     pub annotations: Vec<Annotation>,
 }
