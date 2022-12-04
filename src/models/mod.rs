@@ -1,11 +1,11 @@
-mod annotations;
-mod bim;
-mod datasource;
-mod expression;
-mod model;
-mod relationship;
-mod roles;
-mod skip_if;
+pub mod annotations;
+pub mod bim;
+pub mod datasource;
+pub mod expression;
+pub mod model;
+pub mod relationship;
+pub mod roles;
+pub mod skip_if;
 pub mod table;
 
 pub mod prelude;
