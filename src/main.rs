@@ -4,7 +4,7 @@ pub mod traits;
 
 use std::str::FromStr;
 
-use crate::models::table::ColumnAttributes;
+use crate::traits::ColumnAttributes;
 use io::{read_bim_file, write_bim_file};
 
 fn main() -> io::Result<()> {
