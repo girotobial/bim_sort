@@ -34,8 +34,8 @@ impl CrossFilterBehaviour {
         CrossFilterBehaviour::Single
     }
 
-    pub fn is_single(val: &Self) -> bool {
-        match val {
+    pub fn is_single(&self) -> bool {
+        match self {
             Self::Single => true,
             _ => false,
         }
