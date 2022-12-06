@@ -11,7 +11,7 @@ pub fn is_false(x: &bool) -> bool {
 }
 
 pub fn is_true(b: &bool) -> bool {
-    b.clone()
+    *b
 }
 
 pub fn is_none<T>(option: &Option<T>) -> bool {
