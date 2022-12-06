@@ -9,7 +9,7 @@ pub const fn true_() -> bool {
 }
 
 #[must_use]
-pub const fn is_false(x: &bool) -> bool {
+pub fn is_false(x: &bool) -> bool {
     !x
 }
 
