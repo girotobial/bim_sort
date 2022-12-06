@@ -8,10 +8,11 @@ pub enum Expression {
 }
 
 impl Expression {
+    #[must_use]
     pub fn as_string(&self) -> String {
         match self {
-            Expression::Vec(v) => v.join("\n"),
-            Expression::String(s) => s.clone(),
+            Self::Vec(v) => v.join("\n"),
+            Self::String(s) => s.clone(),
         }
     }
 }

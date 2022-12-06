@@ -30,11 +30,12 @@ pub enum CrossFilterBehaviour {
 }
 
 impl CrossFilterBehaviour {
-    pub fn default() -> Self {
+    pub const fn default() -> Self {
         CrossFilterBehaviour::Single
     }
 
-    pub fn is_single(&self) -> bool {
+    #[must_use]
+    pub const fn is_single(&self) -> bool {
         matches!(self, Self::Single)
     }
 }
@@ -68,7 +69,7 @@ mod test {
         assert_eq!(
             relationship.cross_filter_behaviour,
             CrossFilterBehaviour::Single
-        )
+        );
     }
 
     #[test]

@@ -78,22 +78,20 @@ pub enum Authentication {
 impl Credential for CredentialType {
     fn kind(&self) -> String {
         match self {
-            Self::Key { common } => common.kind.clone(),
-            Self::UsernamePassword { common, .. } => common.kind.clone(),
+            Self::Key { common } | Self::UsernamePassword { common, .. } => common.kind.clone(),
         }
     }
 
     fn path(&self) -> String {
         match self {
-            Self::Key { common } => common.path.clone(),
-            Self::UsernamePassword { common, .. } => common.path.clone(),
+            Self::Key { common } | Self::UsernamePassword { common, .. } => common.path.clone(),
         }
     }
 
     fn authentication(&self) -> Authentication {
         match self {
-            CredentialType::Key { .. } => Authentication::Key,
-            CredentialType::UsernamePassword { .. } => Authentication::UsernamePassword,
+            Self::Key { .. } => Authentication::Key,
+            Self::UsernamePassword { .. } => Authentication::UsernamePassword,
         }
     }
 }
@@ -117,7 +115,7 @@ mod test {
 
         assert_eq!(data.kind(), "DocumentDB".to_string());
         assert_eq!(data.path(), "https://google.com".to_string());
-        assert_eq!(data.authentication(), Authentication::Key)
+        assert_eq!(data.authentication(), Authentication::Key);
     }
 
     #[test]
@@ -136,6 +134,6 @@ mod test {
 
         assert_eq!(data.kind(), "DocumentDB".to_string());
         assert_eq!(data.path(), "https://google.com".to_string());
-        assert_eq!(data.authentication(), Authentication::UsernamePassword)
+        assert_eq!(data.authentication(), Authentication::UsernamePassword);
     }
 }
