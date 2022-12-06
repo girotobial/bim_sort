@@ -35,10 +35,7 @@ impl CrossFilterBehaviour {
     }
 
     pub fn is_single(&self) -> bool {
-        match self {
-            Self::Single => true,
-            _ => false,
-        }
+        matches!(self, Self::Single)
     }
 }
 
