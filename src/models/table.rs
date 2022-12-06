@@ -86,10 +86,7 @@ mod column {
             self.data_type.clone()
         }
         fn is_hidden(&self) -> bool {
-            match self.is_hidden {
-                Some(t) => t,
-                None => false,
-            }
+            self.is_hidden.unwrap_or(false)
         }
     }
 
@@ -197,7 +194,7 @@ mod column {
             ]
             .join("\n");
 
-            let column: Column = serde_json::from_str(&column_content).unwrap();
+            let column: Column = serde_json::from_str(column_content).unwrap();
             assert_eq!(column.expression().unwrap(), expected_expression);
         }
     }
@@ -230,10 +227,7 @@ mod partition {
 
     impl Expressive for Source {
         fn expression(&self) -> Option<String> {
-            match &self.expression {
-                Some(e) => Some(e.as_string()),
-                None => None,
-            }
+            self.expression.as_ref().map(|e| e.as_string())
         }
     }
 }
