@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Debug, PartialEq)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 pub struct DataSource {
     #[serde(rename = "type")]
     pub type_: String,
@@ -11,7 +11,7 @@ pub struct DataSource {
     pub credential: CredentialType,
 }
 
-#[derive(Serialize, Deserialize, Debug, PartialEq)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 #[serde(tag = "protocol")]
 pub enum ConnectionDetails {
     #[serde(rename = "document-db")]
@@ -25,7 +25,7 @@ pub enum ConnectionDetails {
     },
 }
 
-#[derive(Serialize, Deserialize, Debug, PartialEq)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 #[serde(untagged)]
 pub enum Address {
     DocumentDb {
@@ -45,13 +45,13 @@ pub trait Credential {
     fn authentication(&self) -> Authentication;
 }
 
-#[derive(Serialize, Deserialize, Debug, PartialEq)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 pub struct CredentialCommon {
     kind: String,
     path: String,
 }
 
-#[derive(Serialize, Deserialize, Debug, PartialEq)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 #[serde(tag = "AuthenticationKind")]
 pub enum CredentialType {
     Key {
