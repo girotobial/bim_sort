@@ -1,19 +1,19 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
 pub struct DataSource {
     #[serde(rename = "type")]
-    type_: String,
-    name: String,
+    pub type_: String,
+    pub name: String,
 
     #[serde(rename = "connectionDetails")]
-    connection_details: ConnectionDetails,
-    credential: Credential,
+    pub connection_details: ConnectionDetails,
+    pub credential: CredentialType,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
 #[serde(tag = "protocol")]
-enum ConnectionDetails {
+pub enum ConnectionDetails {
     #[serde(rename = "document-db")]
     DocumentDb { address: Address },
 
@@ -25,9 +25,9 @@ enum ConnectionDetails {
     },
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
 #[serde(untagged)]
-enum Address {
+pub enum Address {
     DocumentDb {
         url: String,
         database: Option<String>,
@@ -39,15 +39,21 @@ enum Address {
     },
 }
 
-#[derive(Serialize, Deserialize, Debug)]
-struct CredentialCommon {
+pub trait Credential {
+    fn kind(&self) -> String;
+    fn path(&self) -> String;
+    fn authentication(&self) -> Authentication;
+}
+
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
+pub struct CredentialCommon {
     kind: String,
     path: String,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
 #[serde(tag = "AuthenticationKind")]
-enum Credential {
+pub enum CredentialType {
     Key {
         #[serde(flatten)]
         common: CredentialCommon,
@@ -61,4 +67,75 @@ enum Credential {
         #[serde(rename = "EncryptConnection")]
         encrypt_connection: bool,
     },
+}
+
+#[derive(PartialEq, Eq, Debug)]
+pub enum Authentication {
+    Key,
+    UsernamePassword,
+}
+
+impl Credential for CredentialType {
+    fn kind(&self) -> String {
+        match self {
+            Self::Key { common } => common.kind.clone(),
+            Self::UsernamePassword { common, .. } => common.kind.clone(),
+        }
+    }
+
+    fn path(&self) -> String {
+        match self {
+            Self::Key { common } => common.path.clone(),
+            Self::UsernamePassword { common, .. } => common.path.clone(),
+        }
+    }
+
+    fn authentication(&self) -> Authentication {
+        match self {
+            CredentialType::Key { .. } => Authentication::Key,
+            CredentialType::UsernamePassword { .. } => Authentication::UsernamePassword,
+        }
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    use serde_json;
+
+    #[test]
+    fn test_correctly_deserialize_key_credential() {
+        let input = r#"
+            {
+                "AuthenticationKind": "Key",
+                "kind": "DocumentDB",
+                "path": "https://google.com"
+            }
+        "#;
+
+        let data: CredentialType = serde_json::from_str(input).unwrap();
+
+        assert_eq!(data.kind(), "DocumentDB".to_string());
+        assert_eq!(data.path(), "https://google.com".to_string());
+        assert_eq!(data.authentication(), Authentication::Key)
+    }
+
+    #[test]
+    fn test_correctly_deserialize_key_username_password_credential() {
+        let input = r#"
+        {
+            "AuthenticationKind": "UsernamePassword",
+            "kind": "DocumentDB",
+            "path": "https://google.com",
+            "Username": "MyLogin",
+            "EncryptConnection": true
+        }
+    "#;
+
+        let data: CredentialType = serde_json::from_str(input).unwrap();
+
+        assert_eq!(data.kind(), "DocumentDB".to_string());
+        assert_eq!(data.path(), "https://google.com".to_string());
+        assert_eq!(data.authentication(), Authentication::UsernamePassword)
+    }
 }
