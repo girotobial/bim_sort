@@ -35,20 +35,20 @@ mod column {
     impl ColumnAttributes for Column {
         fn name(&self) -> String {
             match self {
-                Column::Calculated(c) => c.name(),
-                Column::Sourced(c) => c.name(),
+                Self::Calculated(c) => c.name(),
+                Self::Sourced(c) => c.name(),
             }
         }
         fn data_type(&self) -> String {
             match self {
-                Column::Calculated(c) => c.data_type(),
-                Column::Sourced(c) => c.data_type(),
+                Self::Calculated(c) => c.data_type(),
+                Self::Sourced(c) => c.data_type(),
             }
         }
         fn is_hidden(&self) -> bool {
             match self {
-                Column::Calculated(c) => c.is_hidden(),
-                Column::Sourced(c) => c.is_hidden(),
+                Self::Calculated(c) => c.is_hidden(),
+                Self::Sourced(c) => c.is_hidden(),
             }
         }
     }
@@ -56,8 +56,8 @@ mod column {
     impl Expressive for Column {
         fn expression(&self) -> Option<String> {
             match self {
-                Column::Calculated(c) => c.expression(),
-                _ => None,
+                Self::Calculated(c) => c.expression(),
+                Self::Sourced(_) => None,
             }
         }
     }
@@ -227,7 +227,7 @@ mod partition {
 
     impl Expressive for Source {
         fn expression(&self) -> Option<String> {
-            self.expression.as_ref().map(|e| e.as_string())
+            self.expression.as_ref().map(Expression::as_string)
         }
     }
 }
