@@ -4,23 +4,18 @@ pub mod traits;
 
 use std::str::FromStr;
 
-use crate::traits::ColumnAttributes;
-use io::{read_bim_file, write_bim_file};
+use io::read_bim_file;
 
 fn main() -> io::Result<()> {
-    let in_file = std::path::PathBuf::from_str("example.json").unwrap();
-    let out_file = std::path::PathBuf::from_str("example_copy.json").unwrap();
+    let left_file = std::path::PathBuf::from_str("example.json").unwrap();
+    let right_file = std::path::PathBuf::from_str("example.json").unwrap();
 
-    let bim = read_bim_file(&in_file)?;
+    let left_bim = read_bim_file(&left_file)?;
+    let right_bim = read_bim_file(&right_file)?;
 
-    write_bim_file(&bim, &out_file)?;
+    let does_match = left_bim == right_bim;
 
-    for table in bim.model.tables.iter() {
-        println!("{}", table.name);
-        for column in table.columns.iter() {
-            println!("  |-{} | {}", column.name(), column.data_type());
-        }
-    }
+    print!("{}", does_match);
 
     Ok(())
 }

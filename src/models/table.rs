@@ -8,7 +8,7 @@ use super::expression::{Expression, Expressive};
 use self::measure::Measure;
 use super::skip_if::{false_, is_false, is_none};
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct Table {
     pub name: String,
@@ -25,7 +25,7 @@ mod column {
     use super::{Expression, Expressive};
     use serde::{Deserialize, Serialize};
 
-    #[derive(Serialize, Deserialize, Debug)]
+    #[derive(Serialize, Deserialize, Debug, PartialEq)]
     #[serde(untagged, rename_all = "camelCase")]
     pub enum Column {
         Calculated(Calculated),
@@ -62,7 +62,7 @@ mod column {
         }
     }
 
-    #[derive(Serialize, Deserialize, Debug)]
+    #[derive(Serialize, Deserialize, Debug, PartialEq)]
     #[serde(rename_all = "camelCase")]
     struct CommonColumn {
         name: String,
@@ -93,7 +93,7 @@ mod column {
         }
     }
 
-    #[derive(Serialize, Deserialize, Debug)]
+    #[derive(Serialize, Deserialize, Debug, PartialEq)]
     #[serde(rename_all = "camelCase")]
     pub struct Calculated {
         #[serde(flatten)]
@@ -128,7 +128,7 @@ mod column {
         }
     }
 
-    #[derive(Serialize, Deserialize, Debug)]
+    #[derive(Serialize, Deserialize, Debug, PartialEq)]
     #[serde(rename_all = "camelCase")]
     pub struct Sourced {
         #[serde(flatten)]
@@ -208,7 +208,7 @@ mod partition {
     use super::{Deserialize, Serialize};
     use super::{Expression, Expressive};
 
-    #[derive(Serialize, Deserialize, Debug)]
+    #[derive(Serialize, Deserialize, Debug, PartialEq)]
     #[serde(rename_all = "camelCase")]
     pub struct Partition {
         pub name: String,
@@ -218,7 +218,7 @@ mod partition {
         pub source: Source,
     }
 
-    #[derive(Serialize, Deserialize, Debug)]
+    #[derive(Serialize, Deserialize, Debug, PartialEq)]
     #[serde(rename_all = "camelCase")]
     pub struct Source {
         #[serde(rename = "type")]
@@ -242,7 +242,7 @@ mod measure {
     use super::{Deserialize, Serialize};
     use super::{Expression, Expressive};
 
-    #[derive(Serialize, Deserialize, Debug)]
+    #[derive(Serialize, Deserialize, Debug, PartialEq)]
     #[serde(rename_all = "camelCase")]
     pub struct Measure {
         pub name: String,

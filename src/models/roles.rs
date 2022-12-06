@@ -5,7 +5,7 @@ mod role {
     use super::member::Member;
     use serde::{Deserialize, Serialize};
 
-    #[derive(Serialize, Deserialize, Debug)]
+    #[derive(Serialize, Deserialize, Debug, PartialEq)]
     #[serde(rename_all = "camelCase")]
     pub struct Role {
         pub name: String,
@@ -17,7 +17,7 @@ mod role {
 mod member {
     use serde::{Deserialize, Serialize};
 
-    #[derive(Serialize, Deserialize, Debug)]
+    #[derive(Serialize, Deserialize, Debug, PartialEq)]
     #[serde(rename_all = "camelCase")]
     pub struct Member {
         #[serde(rename = "memberName")]

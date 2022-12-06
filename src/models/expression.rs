@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Debug)]
 #[serde(untagged)]
 pub enum Expression {
     Vec(Vec<String>),
@@ -16,11 +16,17 @@ impl Expression {
     }
 }
 
+impl PartialEq for Expression {
+    fn eq(&self, other: &Self) -> bool {
+        self.as_string() == other.as_string()
+    }
+}
+
 pub trait Expressive {
     fn expression(&self) -> Option<String>;
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
 pub struct ModelExpression {
     pub name: String,
 
