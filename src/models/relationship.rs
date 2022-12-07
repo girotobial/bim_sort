@@ -30,8 +30,9 @@ pub enum CrossFilterBehaviour {
 }
 
 impl CrossFilterBehaviour {
+    #[must_use]
     pub const fn default() -> Self {
-        CrossFilterBehaviour::Single
+        Self::Single
     }
 
     #[must_use]

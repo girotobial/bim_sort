@@ -3,10 +3,11 @@ use std::fs;
 use std::io;
 use std::path::PathBuf;
 
-use serde_json;
-
 use crate::models::prelude::BimFile;
 
+/// #Errors
+///
+/// Will return `Err` if `path` does not exist or the user does not have permission to read it
 pub fn read_bim_file(path: &PathBuf) -> io::Result<BimFile> {
     let data = fs::read_to_string(path)?;
     let res: BimFile = serde_json::from_str(&data)?;

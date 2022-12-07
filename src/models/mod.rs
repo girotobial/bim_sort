@@ -1,5 +1,5 @@
 pub mod annotations;
-pub mod bim;
+mod bim;
 pub mod datasource;
 pub mod expression;
 pub mod model;
