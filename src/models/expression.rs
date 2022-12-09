@@ -9,11 +9,10 @@ pub enum Expression {
 
 impl std::fmt::Display for Expression {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let output: String;
-        match self {
-            Self::Vec(v) => output = v.join("\n"),
-            Self::String(s) => output = s.clone(),
-        }
+        let output = match self {
+            Self::Vec(v) => v.join("\n"),
+            Self::String(s) => s.clone(),
+        };
         write!(f, "{}", output)
     }
 }
