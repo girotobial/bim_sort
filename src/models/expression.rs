@@ -7,19 +7,20 @@ pub enum Expression {
     String(String),
 }
 
-impl Expression {
-    #[must_use]
-    pub fn as_string(&self) -> String {
+impl std::fmt::Display for Expression {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let output: String;
         match self {
-            Self::Vec(v) => v.join("\n"),
-            Self::String(s) => s.clone(),
+            Self::Vec(v) => output = v.join("\n"),
+            Self::String(s) => output = s.clone(),
         }
+        write!(f, "{}", output)
     }
 }
 
 impl PartialEq for Expression {
     fn eq(&self, other: &Self) -> bool {
-        self.as_string() == other.as_string()
+        self.to_string() == other.to_string()
     }
 }
 
@@ -37,6 +38,6 @@ pub struct ModelExpression {
 
 impl Expressive for ModelExpression {
     fn expression(&self) -> Option<String> {
-        Some(self.expression.as_string())
+        Some(self.expression.to_string())
     }
 }

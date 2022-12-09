@@ -1,6 +1,7 @@
 pub mod annotations;
 mod bim;
 pub mod datasource;
+mod difference;
 pub mod expression;
 pub mod model;
 pub mod relationship;

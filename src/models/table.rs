@@ -109,7 +109,7 @@ mod column {
 
     impl Expressive for Calculated {
         fn expression(&self) -> Option<String> {
-            Some(self.expression.as_string())
+            Some(self.expression.to_string())
         }
     }
 
@@ -227,7 +227,7 @@ mod partition {
 
     impl Expressive for Source {
         fn expression(&self) -> Option<String> {
-            self.expression.as_ref().map(Expression::as_string)
+            self.expression.as_ref().map(Expression::to_string)
         }
     }
 }
@@ -247,7 +247,7 @@ mod measure {
 
     impl Expressive for Measure {
         fn expression(&self) -> Option<String> {
-            Some(self.expression.as_string())
+            Some(self.expression.to_string())
         }
     }
 }
