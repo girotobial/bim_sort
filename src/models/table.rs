@@ -8,7 +8,7 @@ use super::expression::{Expression, Expressive};
 use self::measure::Measure;
 use super::skip_if::{false_, is_false, is_none};
 
-#[derive(Serialize, Deserialize, Debug, PartialEq)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct Table {
     pub name: String,
@@ -20,16 +20,39 @@ pub struct Table {
     pub measures: Option<Vec<Measure>>,
 }
 
+impl Table {
+    fn sort(&mut self) {
+        self.partitions.sort();
+        self.columns.sort();
+        match &mut self.measures {
+            Some(v) => v.sort(),
+            _ => (),
+        }
+    }
+}
+
 mod column {
     use super::{is_none, Annotation};
     use super::{Expression, Expressive};
     use serde::{Deserialize, Serialize};
 
-    #[derive(Serialize, Deserialize, Debug, PartialEq)]
+    #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
     #[serde(untagged, rename_all = "camelCase")]
     pub enum Column {
         Calculated(Calculated),
         Sourced(Sourced),
+    }
+
+    impl PartialOrd for Column {
+        fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+            Some(self.cmp(other))
+        }
+    }
+
+    impl Ord for Column {
+        fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+            self.name().to_lowercase().cmp(&other.name().to_lowercase())
+        }
     }
 
     impl ColumnAttributes for Column {
@@ -62,7 +85,7 @@ mod column {
         }
     }
 
-    #[derive(Serialize, Deserialize, Debug, PartialEq)]
+    #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
     #[serde(rename_all = "camelCase")]
     struct CommonColumn {
         name: String,
@@ -90,7 +113,7 @@ mod column {
         }
     }
 
-    #[derive(Serialize, Deserialize, Debug, PartialEq)]
+    #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
     #[serde(rename_all = "camelCase")]
     pub struct Calculated {
         #[serde(flatten)]
@@ -125,7 +148,7 @@ mod column {
         }
     }
 
-    #[derive(Serialize, Deserialize, Debug, PartialEq)]
+    #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
     #[serde(rename_all = "camelCase")]
     pub struct Sourced {
         #[serde(flatten)]
@@ -137,9 +160,6 @@ mod column {
 
         #[serde(skip_serializing_if = "is_none")]
         pub format_string: Option<String>,
-
-        #[serde(skip_serializing_if = "is_none")]
-        pub is_hidden: Option<bool>,
 
         #[serde(skip_serializing_if = "is_none")]
         pub annotations: Option<Vec<Annotation>>,
@@ -196,6 +216,58 @@ mod column {
 
             let column: Column = serde_json::from_str(column_content).unwrap();
             assert_eq!(column.expression().unwrap(), expected_expression);
+        }
+
+        use super::Calculated;
+        use super::CommonColumn;
+        use super::Sourced;
+
+        impl Column {
+            fn new_calculated(name: &str, data_type: &str, expression: &str) -> Self {
+                Column::Calculated(Calculated {
+                    common: CommonColumn {
+                        name: name.to_string(),
+                        data_type: data_type.to_string(),
+                        is_hidden: None,
+                    },
+                    type_: "calculated".to_string(),
+                    expression: crate::models::Expression::String(expression.to_string()),
+                    is_data_type_inferred: None,
+                    format_string: None,
+                })
+            }
+            fn new_sourced(name: &str, data_type: &str, source_column: &str) -> Self {
+                Column::Sourced(Sourced {
+                    common: CommonColumn {
+                        name: name.to_string(),
+                        data_type: data_type.to_string(),
+                        is_hidden: None,
+                    },
+                    source_column: source_column.to_string(),
+                    description: None,
+                    format_string: None,
+                    annotations: None,
+                })
+            }
+        }
+
+        #[test]
+        fn test_can_sort_columns() {
+            let mut columns = vec![
+                Column::new_calculated("ZZZ Calculated", "int64", "COUNTROWS(Calculations)"),
+                Column::new_sourced("ZZZ Sourced", "int64", "ZZZ Sourced"),
+                Column::new_sourced("AAA Sourced", "int64", "AAA Sourced"),
+                Column::new_calculated("AAA Calculated", "int64", "COUNTROWS(Calculated)"),
+            ];
+            let expected = vec![
+                Column::new_calculated("AAA Calculated", "int64", "COUNTROWS(Calculated)"),
+                Column::new_sourced("AAA Sourced", "int64", "AAA Sourced"),
+                Column::new_calculated("ZZZ Calculated", "int64", "COUNTROWS(Calculations)"),
+                Column::new_sourced("ZZZ Sourced", "int64", "ZZZ Sourced"),
+            ];
+
+            columns.sort();
+            assert_eq!(columns, expected)
         }
     }
 }
@@ -272,8 +344,8 @@ mod partition {
                 Partition::new("2020", "full", Source::new("m", "Some m script")),
             ];
             let expected = vec![
-                Partition::new("2022 Onwards", "full", Source::new("m", "Some m script")),
                 Partition::new("2020", "full", Source::new("m", "Some m script")),
+                Partition::new("2022 Onwards", "full", Source::new("m", "Some m script")),
             ];
             partitions.sort();
             assert_eq!(partitions, expected);
