@@ -11,6 +11,18 @@ pub struct DataSource {
     pub credential: CredentialType,
 }
 
+impl PartialOrd for DataSource {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for DataSource {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        self.name.to_lowercase().cmp(&other.name.to_lowercase())
+    }
+}
+
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 #[serde(tag = "protocol")]
 pub enum ConnectionDetails {
@@ -135,5 +147,86 @@ mod test {
         assert_eq!(data.kind(), "DocumentDB".to_string());
         assert_eq!(data.path(), "https://google.com".to_string());
         assert_eq!(data.authentication(), Authentication::UsernamePassword);
+    }
+
+    #[test]
+    fn test_can_sort_vec_of_datasources() {
+        let mut datasources = vec![
+            DataSource {
+                type_: "structured".to_string(),
+                name: "Zero Datasource".to_string(),
+                connection_details: ConnectionDetails::DocumentDb {
+                    address: Address::DocumentDb {
+                        url: "http://google.com".to_string(),
+                        database: Some("TheDB".to_string()),
+                        collection: Some("Default".to_string()),
+                    },
+                },
+                credential: CredentialType::Key {
+                    common: CredentialCommon {
+                        kind: "DocumentDb".to_string(),
+                        path: "http://google.com".to_string(),
+                    },
+                },
+            },
+            DataSource {
+                type_: "structured".to_string(),
+                name: "A Datasource".to_string(),
+                connection_details: ConnectionDetails::DocumentDb {
+                    address: Address::DocumentDb {
+                        url: "http://google.com".to_string(),
+                        database: Some("TheDB".to_string()),
+                        collection: Some("Default".to_string()),
+                    },
+                },
+                credential: CredentialType::Key {
+                    common: CredentialCommon {
+                        kind: "DocumentDb".to_string(),
+                        path: "http://google.com".to_string(),
+                    },
+                },
+            },
+        ];
+
+        let expected = vec![
+            DataSource {
+                type_: "structured".to_string(),
+                name: "Zero Datasource".to_string(),
+                connection_details: ConnectionDetails::DocumentDb {
+                    address: Address::DocumentDb {
+                        url: "http://google.com".to_string(),
+                        database: Some("TheDB".to_string()),
+                        collection: Some("Default".to_string()),
+                    },
+                },
+                credential: CredentialType::Key {
+                    common: CredentialCommon {
+                        kind: "DocumentDb".to_string(),
+                        path: "http://google.com".to_string(),
+                    },
+                },
+            },
+            DataSource {
+                type_: "structured".to_string(),
+                name: "A Datasource".to_string(),
+                connection_details: ConnectionDetails::DocumentDb {
+                    address: Address::DocumentDb {
+                        url: "http://google.com".to_string(),
+                        database: Some("TheDB".to_string()),
+                        collection: Some("Default".to_string()),
+                    },
+                },
+                credential: CredentialType::Key {
+                    common: CredentialCommon {
+                        kind: "DocumentDb".to_string(),
+                        path: "http://google.com".to_string(),
+                    },
+                },
+            },
+        ];
+
+        datasources.sort();
+        datasources.reverse();
+        assert_eq!(expected, datasources);
     }
 }
