@@ -88,18 +88,21 @@ pub enum Authentication {
 }
 
 impl Credential for CredentialType {
+    #[must_use]
     fn kind(&self) -> String {
         match self {
             Self::Key { common } | Self::UsernamePassword { common, .. } => common.kind.clone(),
         }
     }
 
+    #[must_use]
     fn path(&self) -> String {
         match self {
             Self::Key { common } | Self::UsernamePassword { common, .. } => common.path.clone(),
         }
     }
 
+    #[must_use]
     fn authentication(&self) -> Authentication {
         match self {
             Self::Key { .. } => Authentication::Key,

@@ -23,7 +23,7 @@ fn main() -> std::io::Result<()> {
 
     let mut bim = Bim::from_file(&infile)?;
 
-    bim.model.data_sources.sort();
+    bim.sort();
 
     bim.to_file(&outfile)?;
 

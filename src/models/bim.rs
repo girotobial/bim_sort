@@ -23,7 +23,7 @@ impl Bim {
         Ok(res)
     }
 
-    pub fn to_file(self: &Self, path: &PathBuf) -> io::Result<()> {
+    pub fn to_file(&self, path: &PathBuf) -> io::Result<()> {
         let contents = serde_json::to_string_pretty(self)?;
         fs::write(path, contents)?;
         Ok(())

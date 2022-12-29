@@ -27,7 +27,7 @@ pub trait Expressive {
     fn expression(&self) -> Option<String>;
 }
 
-#[derive(Serialize, Deserialize, Debug, PartialEq)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 pub struct ModelExpression {
     pub name: String,
 
@@ -36,6 +36,7 @@ pub struct ModelExpression {
 }
 
 impl Expressive for ModelExpression {
+    #[must_use]
     fn expression(&self) -> Option<String> {
         Some(self.expression.to_string())
     }
