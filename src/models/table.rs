@@ -205,7 +205,7 @@ mod partition {
     use super::{Deserialize, Serialize};
     use super::{Expression, Expressive};
 
-    #[derive(Serialize, Deserialize, Debug, PartialEq)]
+    #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
     #[serde(rename_all = "camelCase")]
     pub struct Partition {
         pub name: String,
@@ -215,7 +215,19 @@ mod partition {
         pub source: Source,
     }
 
-    #[derive(Serialize, Deserialize, Debug, PartialEq)]
+    impl Ord for Partition {
+        fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+            self.name.to_lowercase().cmp(&other.name.to_lowercase())
+        }
+    }
+
+    impl PartialOrd for Partition {
+        fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+            Some(self.cmp(other))
+        }
+    }
+
+    #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
     #[serde(rename_all = "camelCase")]
     pub struct Source {
         #[serde(rename = "type")]
@@ -228,6 +240,43 @@ mod partition {
     impl Expressive for Source {
         fn expression(&self) -> Option<String> {
             self.expression.as_ref().map(Expression::to_string)
+        }
+    }
+
+    #[cfg(test)]
+    mod test {
+        use super::{Expression, Partition, Source};
+
+        impl Partition {
+            fn new(name: &str, dataview: &str, source: Source) -> Self {
+                Partition {
+                    name: name.to_string(),
+                    data_view: Some(dataview.to_string()),
+                    source,
+                }
+            }
+        }
+        impl Source {
+            fn new(type_: &str, expression: &str) -> Self {
+                Source {
+                    type_: type_.to_string(),
+                    expression: Some(Expression::String(expression.to_string())),
+                }
+            }
+        }
+
+        #[test]
+        fn test_can_sort_partitions() {
+            let mut partitions = vec![
+                Partition::new("2022 Onwards", "full", Source::new("m", "Some m script")),
+                Partition::new("2020", "full", Source::new("m", "Some m script")),
+            ];
+            let expected = vec![
+                Partition::new("2022 Onwards", "full", Source::new("m", "Some m script")),
+                Partition::new("2020", "full", Source::new("m", "Some m script")),
+            ];
+            partitions.sort();
+            assert_eq!(partitions, expected);
         }
     }
 }
