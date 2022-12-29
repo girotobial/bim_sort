@@ -236,7 +236,7 @@ mod measure {
     use super::{Deserialize, Serialize};
     use super::{Expression, Expressive};
 
-    #[derive(Serialize, Deserialize, Debug, PartialEq)]
+    #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
     #[serde(rename_all = "camelCase")]
     pub struct Measure {
         pub name: String,
@@ -245,9 +245,61 @@ mod measure {
         pub display_folder: Option<String>,
     }
 
+    impl Ord for Measure {
+        fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+            self.name.to_lowercase().cmp(&other.name.to_lowercase())
+        }
+    }
+
+    impl PartialOrd for Measure {
+        fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+            Some(self.cmp(other))
+        }
+    }
+
     impl Expressive for Measure {
         fn expression(&self) -> Option<String> {
             Some(self.expression.to_string())
+        }
+    }
+
+    #[cfg(test)]
+    mod test {
+        use super::Expression;
+        use super::Measure;
+
+        impl Measure {
+            fn new(name: &str, expression: &str) -> Self {
+                let expression = Expression::String(expression.to_string());
+                Measure {
+                    name: name.to_string(),
+                    expression,
+                    format_string: None,
+                    display_folder: None,
+                }
+            }
+        }
+
+        #[test]
+        fn test_can_sort_measures() {
+            let mut measures = vec![
+                Measure::new("Total Count", "COUNTROWS(Table)"),
+                Measure::new(
+                    "Days Per Month",
+                    "AVERAGEX ( VALUES ( 'Calendar'[MonthStarting] ), [Number of Days Delivered] )",
+                ),
+            ];
+
+            let expected = vec![
+                Measure::new(
+                    "Days Per Month",
+                    "AVERAGEX ( VALUES ( 'Calendar'[MonthStarting] ), [Number of Days Delivered] )",
+                ),
+                Measure::new("Total Count", "COUNTROWS(Table)"),
+            ];
+
+            measures.sort();
+            assert_eq!(measures, expected);
         }
     }
 }
