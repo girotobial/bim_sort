@@ -1,6 +1,7 @@
 use super::annotations::Annotation;
 use super::expression::ModelExpression;
 use super::table::Table;
+use super::traits::RecursiveSort;
 use super::{datasource::DataSource, relationship::Relationship, roles::Role};
 
 use serde::{Deserialize, Serialize};
@@ -16,4 +17,11 @@ pub struct Model {
     pub roles: Vec<Role>,
     pub expressions: Vec<ModelExpression>,
     pub annotations: Vec<Annotation>,
+}
+
+impl RecursiveSort for Model {
+    fn recursive_sort(&mut self) {
+        self.data_sources.sort();
+        self.tables.recursive_sort();
+    }
 }

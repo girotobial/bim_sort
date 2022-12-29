@@ -19,7 +19,7 @@ pub struct Bim {
 impl Bim {
     pub fn from_file(path: &PathBuf) -> io::Result<Self> {
         let data = fs::read_to_string(path)?;
-        let res: Bim = serde_json::from_str(&data)?;
+        let res: Self = serde_json::from_str(&data)?;
         Ok(res)
     }
 
@@ -27,5 +27,10 @@ impl Bim {
         let contents = serde_json::to_string_pretty(self)?;
         fs::write(path, contents)?;
         Ok(())
+    }
+
+    pub fn sort(&mut self) {
+        use super::traits::RecursiveSort;
+        self.model.recursive_sort();
     }
 }

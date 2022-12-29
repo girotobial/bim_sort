@@ -7,6 +7,7 @@ use super::expression::{Expression, Expressive};
 
 use self::measure::Measure;
 use super::skip_if::{false_, is_false, is_none};
+use super::traits::RecursiveSort;
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
@@ -20,18 +21,30 @@ pub struct Table {
     pub measures: Option<Vec<Measure>>,
 }
 
-impl Table {
-    fn sort(&mut self) {
+impl RecursiveSort for Table {
+    fn recursive_sort(&mut self) {
         self.partitions.sort();
         self.columns.sort();
-        match &mut self.measures {
-            Some(v) => v.sort(),
-            _ => (),
+        if let Some(v) = &mut self.measures {
+            v.sort()
         }
     }
 }
 
+impl PartialOrd for Table {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for Table {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        self.name.to_lowercase().cmp(&other.name.to_lowercase())
+    }
+}
+
 mod column {
+    use super::RecursiveSort;
     use super::{is_none, Annotation};
     use super::{Expression, Expressive};
     use serde::{Deserialize, Serialize};
@@ -81,6 +94,16 @@ mod column {
             match self {
                 Self::Calculated(c) => c.expression(),
                 Self::Sourced(_) => None,
+            }
+        }
+    }
+
+    impl RecursiveSort for Column {
+        fn recursive_sort(&mut self) {
+            if let Self::Sourced(s) = self {
+                if let Some(a) = &mut s.annotations {
+                    a.sort();
+                }
             }
         }
     }

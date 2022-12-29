@@ -7,6 +7,7 @@ pub mod relationship;
 pub mod roles;
 pub mod skip_if;
 pub mod table;
+mod traits;
 
 pub mod prelude;
 
