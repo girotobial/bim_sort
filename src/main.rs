@@ -4,29 +4,28 @@
     clippy::unwrap_used,
     clippy::expect_used
 )]
-pub mod io;
 pub mod models;
 pub mod traits;
 
+use models::Bim;
 use std::str::FromStr;
 
-use io::read_bim_file;
-
 const FILENAME: &str = "example.json";
+const FILE2: &str = "example_changed.json";
 
 #[allow(clippy::missing_errors_doc)]
-fn main() -> io::Result<()> {
-    let left_file = std::path::PathBuf::from_str(FILENAME)
-        .unwrap_or_else(|_| panic!("Could not find {}", FILENAME));
-    let right_file = std::path::PathBuf::from_str(FILENAME)
+fn main() -> std::io::Result<()> {
+    let infile = std::path::PathBuf::from_str(FILENAME)
         .unwrap_or_else(|_| panic!("Could not find {}", FILENAME));
 
-    let left_bim = read_bim_file(&left_file)?;
-    let right_bim = read_bim_file(&right_file)?;
+    let outfile =
+        std::path::PathBuf::from_str(FILE2).unwrap_or_else(|_| panic!("Could not find {}", FILE2));
 
-    let does_match = left_bim == right_bim;
+    let mut bim = Bim::from_file(&infile)?;
 
-    print!("{}", does_match);
+    bim.model.data_sources.sort();
+
+    bim.to_file(&outfile)?;
 
     Ok(())
 }

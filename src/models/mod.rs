@@ -1,7 +1,6 @@
 pub mod annotations;
 mod bim;
 pub mod datasource;
-mod difference;
 pub mod expression;
 pub mod model;
 pub mod relationship;
@@ -10,3 +9,9 @@ pub mod skip_if;
 pub mod table;
 
 pub mod prelude;
+
+pub use bim::Bim;
+pub use datasource::DataSource;
+pub use expression::{Expression, Expressive};
+pub use model::Model;
+pub use relationship::Relationship;
