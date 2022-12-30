@@ -7,7 +7,7 @@ mod role {
     use super::member::Member;
     use serde::{Deserialize, Serialize};
 
-    #[derive(Serialize, Deserialize, Debug, PartialEq, Eq, PartialOrd)]
+    #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
     #[serde(rename_all = "camelCase")]
     pub struct Role {
         pub name: String,
@@ -26,12 +26,18 @@ mod role {
             self.name.to_lowercase().cmp(&other.name.to_lowercase())
         }
     }
+
+    impl PartialOrd for Role {
+        fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+            Some(self.cmp(other))
+        }
+    }
 }
 
 mod member {
     use serde::{Deserialize, Serialize};
 
-    #[derive(Serialize, Deserialize, Debug, PartialEq, Eq, PartialOrd)]
+    #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
     #[serde(rename_all = "camelCase")]
     pub struct Member {
         #[serde(rename = "memberName")]
@@ -46,6 +52,12 @@ mod member {
     impl Ord for Member {
         fn cmp(&self, other: &Self) -> std::cmp::Ordering {
             self.name.to_lowercase().cmp(&other.name.to_lowercase())
+        }
+    }
+
+    impl PartialOrd for Member {
+        fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+            Some(self.cmp(other))
         }
     }
     #[cfg(test)]

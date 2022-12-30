@@ -6,7 +6,7 @@ use super::{datasource::DataSource, relationship::Relationship, roles::Role};
 
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Debug, PartialEq)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct Model {
     pub culture: String,

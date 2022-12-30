@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-pub use self::column::{Column, ColumnAttributes};
+pub use self::column::{Attributes, Column};
 pub use self::partition::{Partition, Source};
 use super::annotations::Annotation;
 use super::expression::{Expression, Expressive};
@@ -26,7 +26,7 @@ impl RecursiveSort for Table {
         self.partitions.sort();
         self.columns.sort();
         if let Some(v) = &mut self.measures {
-            v.sort()
+            v.sort();
         }
     }
 }
@@ -68,7 +68,7 @@ mod column {
         }
     }
 
-    impl ColumnAttributes for Column {
+    impl Attributes for Column {
         fn name(&self) -> String {
             match self {
                 Self::Calculated(c) => c.name(),
@@ -118,13 +118,13 @@ mod column {
         is_hidden: Option<bool>,
     }
 
-    pub trait ColumnAttributes {
+    pub trait Attributes {
         fn name(&self) -> String;
         fn data_type(&self) -> String;
         fn is_hidden(&self) -> bool;
     }
 
-    impl ColumnAttributes for CommonColumn {
+    impl Attributes for CommonColumn {
         fn name(&self) -> String {
             self.name.clone()
         }
@@ -159,7 +159,7 @@ mod column {
         }
     }
 
-    impl ColumnAttributes for Calculated {
+    impl Attributes for Calculated {
         fn name(&self) -> String {
             self.common.name()
         }
@@ -188,7 +188,7 @@ mod column {
         pub annotations: Option<Vec<Annotation>>,
     }
 
-    impl ColumnAttributes for Sourced {
+    impl Attributes for Sourced {
         fn data_type(&self) -> String {
             self.common.data_type()
         }
@@ -237,8 +237,11 @@ mod column {
             ]
             .join("\n");
 
-            let column: Column = serde_json::from_str(column_content).unwrap();
-            assert_eq!(column.expression().unwrap(), expected_expression);
+            let column: Column = serde_json::from_str(column_content).expect("Should not fail");
+            assert_eq!(
+                column.expression().expect("Should not fail"),
+                expected_expression
+            );
         }
 
         use super::Calculated;
@@ -247,7 +250,7 @@ mod column {
 
         impl Column {
             fn new_calculated(name: &str, data_type: &str, expression: &str) -> Self {
-                Column::Calculated(Calculated {
+                Self::Calculated(Calculated {
                     common: CommonColumn {
                         name: name.to_string(),
                         data_type: data_type.to_string(),
@@ -260,7 +263,7 @@ mod column {
                 })
             }
             fn new_sourced(name: &str, data_type: &str, source_column: &str) -> Self {
-                Column::Sourced(Sourced {
+                Self::Sourced(Sourced {
                     common: CommonColumn {
                         name: name.to_string(),
                         data_type: data_type.to_string(),
@@ -290,7 +293,7 @@ mod column {
             ];
 
             columns.sort();
-            assert_eq!(columns, expected)
+            assert_eq!(columns, expected);
         }
     }
 }
@@ -344,7 +347,7 @@ mod partition {
 
         impl Partition {
             fn new(name: &str, dataview: &str, source: Source) -> Self {
-                Partition {
+                Self {
                     name: name.to_string(),
                     data_view: Some(dataview.to_string()),
                     source,
@@ -353,7 +356,7 @@ mod partition {
         }
         impl Source {
             fn new(type_: &str, expression: &str) -> Self {
-                Source {
+                Self {
                     type_: type_.to_string(),
                     expression: Some(Expression::String(expression.to_string())),
                 }
@@ -415,7 +418,7 @@ mod measure {
         impl Measure {
             fn new(name: &str, expression: &str) -> Self {
                 let expression = Expression::String(expression.to_string());
-                Measure {
+                Self {
                     name: name.to_string(),
                     expression,
                     format_string: None,
