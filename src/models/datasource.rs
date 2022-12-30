@@ -53,6 +53,8 @@ pub enum ConnectionDetails {
         authentication: Option<String>,
         query: Option<String>,
     },
+    #[serde(rename = "postgresql")]
+    PostgresSql { address: Address },
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
