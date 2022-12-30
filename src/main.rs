@@ -1,15 +1,5 @@
-mod cli;
-#[warn(
-    clippy::pedantic,
-    clippy::nursery,
-    clippy::unwrap_used,
-    clippy::expect_used
-)]
-mod models;
-
-use cli::Args;
-
-use models::Bim;
+use bim_sort::cli::Args;
+use bim_sort::models::Bim;
 
 #[allow(clippy::missing_errors_doc)]
 fn main() -> std::io::Result<()> {
