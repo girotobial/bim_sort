@@ -34,9 +34,7 @@ fn main() -> std::io::Result<()> {
 
     if let Some(infile) = args.file {
         let mut bim = Bim::from_file(&infile)?;
-
         bim.sort();
-
         bim.to_file(&infile)?;
     }
     Ok(())
