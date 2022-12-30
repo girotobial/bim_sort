@@ -1,0 +1,7 @@
+- id: bim_sort
+  name: bim_sort
+  entry: bim_sort
+  description: Sort bim files with bim_sort
+  require_serial: true
+  language: rust
+  files: .bim
