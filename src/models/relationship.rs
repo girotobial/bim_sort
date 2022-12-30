@@ -34,6 +34,7 @@ impl PartialOrd for Relationship {
 }
 
 #[derive(Deserialize, Debug, Serialize, PartialEq, Eq)]
+#[allow(clippy::use_self)] // False positive
 pub enum CrossFilterBehaviour {
     Single,
 

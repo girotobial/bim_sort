@@ -27,6 +27,7 @@ pub trait Expressive {
     fn expression(&self) -> Option<String>;
 }
 
+#[allow(clippy::module_name_repetitions)]
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 pub struct ModelExpression {
     pub name: String,
