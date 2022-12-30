@@ -1,5 +1,5 @@
 # Bim Sort
-Bim sort is a command line application to sort Microsoft Analysis Services bim files. 
+Bim sort is a command line application to sort Microsoft Analysis Services bim files.
 
 ## Installation
 
@@ -52,6 +52,9 @@ under the `repos` section of the your `.pre-commit-config.yaml` file.
 
 ## Licence
 [GNU General Public License version 3](LICENCE.md)
+
+## Source Code
+Source code is available from https://github.com/girotobial/bim_merge
 
 ## Project Status
 Currently in alpha, looking for testers to validate that all types of bim files can be sorted correctly without errors.
