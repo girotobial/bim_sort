@@ -35,6 +35,18 @@ pub struct ModelExpression {
     expression: Expression,
 }
 
+impl Ord for ModelExpression {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        self.name.to_lowercase().cmp(&other.name.to_lowercase())
+    }
+}
+
+impl PartialOrd for ModelExpression {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
 impl Expressive for ModelExpression {
     #[must_use]
     fn expression(&self) -> Option<String> {
