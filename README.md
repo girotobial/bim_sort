@@ -11,7 +11,7 @@ Download the latest version for your operating system from the releases.
 
 - Clone this repository
 ```bash
-git clone https://github.com/girotobial/bim_merge.git
+git clone https://github.com/girotobial/bim_sort.git
 ```
 
 - build using cargo
@@ -54,7 +54,7 @@ under the `repos` section of the your `.pre-commit-config.yaml` file.
 [GNU General Public License version 3](LICENCE.md)
 
 ## Source Code
-Source code is available from https://github.com/girotobial/bim_merge
+Source code is available from https://github.com/girotobial/bim_sort
 
 ## Project Status
 Currently in alpha, looking for testers to validate that all types of bim files can be sorted correctly without errors.
