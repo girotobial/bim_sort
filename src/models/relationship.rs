@@ -21,6 +21,18 @@ pub struct Relationship {
     cross_filter_behaviour: CrossFilterBehaviour,
 }
 
+impl Ord for Relationship {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        self.name.to_lowercase().cmp(&other.name.to_lowercase())
+    }
+}
+
+impl PartialOrd for Relationship {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
 #[derive(Deserialize, Debug, Serialize, PartialEq, Eq)]
 pub enum CrossFilterBehaviour {
     Single,

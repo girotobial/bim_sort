@@ -23,5 +23,6 @@ impl RecursiveSort for Model {
     fn recursive_sort(&mut self) {
         self.data_sources.sort();
         self.tables.recursive_sort();
+        self.relationships.sort();
     }
 }
