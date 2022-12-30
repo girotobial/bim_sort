@@ -7,6 +7,7 @@ use serde::{Deserialize, Serialize};
 
 use super::Model;
 
+/// The root bim file.
 #[derive(Serialize, Deserialize, Debug, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct Bim {
