@@ -24,5 +24,6 @@ impl RecursiveSort for Model {
         self.data_sources.sort();
         self.tables.recursive_sort();
         self.relationships.sort();
+        self.roles.recursive_sort();
     }
 }

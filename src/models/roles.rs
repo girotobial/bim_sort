@@ -2,22 +2,36 @@ pub use member::Member;
 pub use role::Role;
 
 mod role {
+    use crate::models::traits::RecursiveSort;
+
     use super::member::Member;
     use serde::{Deserialize, Serialize};
 
-    #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
+    #[derive(Serialize, Deserialize, Debug, PartialEq, Eq, PartialOrd)]
     #[serde(rename_all = "camelCase")]
     pub struct Role {
         pub name: String,
         pub model_permission: String,
         pub members: Vec<Member>,
     }
+
+    impl RecursiveSort for Role {
+        fn recursive_sort(&mut self) {
+            self.members.sort();
+        }
+    }
+
+    impl Ord for Role {
+        fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+            self.name.to_lowercase().cmp(&other.name.to_lowercase())
+        }
+    }
 }
 
 mod member {
     use serde::{Deserialize, Serialize};
 
-    #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
+    #[derive(Serialize, Deserialize, Debug, PartialEq, Eq, PartialOrd)]
     #[serde(rename_all = "camelCase")]
     pub struct Member {
         #[serde(rename = "memberName")]
@@ -29,6 +43,11 @@ mod member {
         pub identity_provider: String,
     }
 
+    impl Ord for Member {
+        fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+            self.name.to_lowercase().cmp(&other.name.to_lowercase())
+        }
+    }
     #[cfg(test)]
     mod test {
         use super::Member;
