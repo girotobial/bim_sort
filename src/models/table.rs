@@ -36,6 +36,8 @@ pub struct Table {
     pub is_hidden: bool,
     pub columns: Vec<column::Column>,
     pub partitions: Vec<Partition>,
+
+    #[serde(skip_serializing_if = "is_none")]
     pub measures: Option<Vec<Measure>>,
 }
 
