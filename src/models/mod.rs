@@ -9,8 +9,6 @@ pub mod skip_if;
 pub mod table;
 mod traits;
 
-pub mod prelude;
-
 pub use bim::Bim;
 pub use datasource::DataSource;
 pub use expression::{Expression, Expressive};
