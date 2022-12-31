@@ -18,6 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 use super::annotations::Annotation;
 use super::expression::ModelExpression;
+use super::skip_if::{false_, is_false, is_none};
 use super::table::Table;
 use super::traits::RecursiveSort;
 use super::{datasource::DataSource, relationship::Relationship, roles::Role};
@@ -28,11 +29,16 @@ use serde::{Deserialize, Serialize};
 #[serde(rename_all = "camelCase")]
 pub struct Model {
     pub culture: String,
+
+    #[serde(default = "false_", skip_serializing_if = "is_false")]
     pub discourage_implicit_measures: bool,
+
     pub data_sources: Vec<DataSource>,
     pub tables: Vec<Table>,
     pub relationships: Vec<Relationship>,
-    pub roles: Vec<Role>,
+
+    #[serde(skip_serializing_if = "is_none")]
+    pub roles: Option<Vec<Role>>,
     pub expressions: Vec<ModelExpression>,
     pub annotations: Vec<Annotation>,
 }
@@ -42,7 +48,11 @@ impl RecursiveSort for Model {
         self.data_sources.sort();
         self.tables.recursive_sort();
         self.relationships.sort();
-        self.roles.recursive_sort();
+        {
+            if let Some(roles) = &mut self.roles {
+                roles.recursive_sort();
+            }
+        }
         self.expressions.sort();
         self.annotations.sort();
     }

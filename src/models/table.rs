@@ -36,6 +36,8 @@ pub struct Table {
     pub is_hidden: bool,
     pub columns: Vec<column::Column>,
     pub partitions: Vec<Partition>,
+
+    #[serde(skip_serializing_if = "is_none")]
     pub measures: Option<Vec<Measure>>,
 }
 
@@ -400,13 +402,18 @@ mod partition {
 mod measure {
     use super::{Deserialize, Serialize};
     use super::{Expression, Expressive};
+    use crate::models::skip_if::is_none;
 
     #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
     #[serde(rename_all = "camelCase")]
     pub struct Measure {
         pub name: String,
         expression: Expression,
+
+        #[serde(skip_serializing_if = "is_none")]
         pub format_string: Option<String>,
+
+        #[serde(skip_serializing_if = "is_none")]
         pub display_folder: Option<String>,
     }
 

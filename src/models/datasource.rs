@@ -50,9 +50,15 @@ pub enum ConnectionDetails {
     #[serde(rename = "tds")]
     Tds {
         address: Address,
+
+        #[serde(skip_serializing_if = "Option::is_none")]
         authentication: Option<String>,
+
+        #[serde(skip_serializing_if = "Option::is_none")]
         query: Option<String>,
     },
+    #[serde(rename = "postgresql")]
+    PostgresSql { address: Address },
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
@@ -60,7 +66,11 @@ pub enum ConnectionDetails {
 pub enum Address {
     DocumentDb {
         url: String,
+
+        #[serde(skip_serializing_if = "Option::is_none")]
         database: Option<String>,
+
+        #[serde(skip_serializing_if = "Option::is_none")]
         collection: Option<String>,
     },
     Tds {
