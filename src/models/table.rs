@@ -24,7 +24,7 @@ use super::annotations::Annotation;
 use super::expression::{Expression, Expressive};
 
 use self::measure::Measure;
-use super::skip_if::{false_, is_false, is_none};
+use super::skip_if::{false_, is_false};
 use super::traits::RecursiveSort;
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
@@ -37,7 +37,7 @@ pub struct Table {
     pub columns: Vec<column::Column>,
     pub partitions: Vec<Partition>,
 
-    #[serde(skip_serializing_if = "is_none")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub measures: Option<Vec<Measure>>,
 }
 
@@ -64,8 +64,8 @@ impl Ord for Table {
 }
 
 mod column {
+    use super::Annotation;
     use super::RecursiveSort;
-    use super::{is_none, Annotation};
     use super::{Expression, Expressive};
     use serde::{Deserialize, Serialize};
 
@@ -134,7 +134,7 @@ mod column {
         name: String,
         data_type: String,
 
-        #[serde(skip_serializing_if = "is_none")]
+        #[serde(skip_serializing_if = "Option::is_none")]
         is_hidden: Option<bool>,
     }
 
@@ -166,10 +166,10 @@ mod column {
         pub type_: String,
         expression: Expression,
 
-        #[serde(skip_serializing_if = "is_none")]
+        #[serde(skip_serializing_if = "Option::is_none")]
         pub is_data_type_inferred: Option<bool>,
 
-        #[serde(skip_serializing_if = "is_none")]
+        #[serde(skip_serializing_if = "Option::is_none")]
         pub format_string: Option<String>,
     }
 
@@ -198,13 +198,13 @@ mod column {
         common: CommonColumn,
         pub source_column: String,
 
-        #[serde(skip_serializing_if = "is_none")]
+        #[serde(skip_serializing_if = "Option::is_none")]
         pub description: Option<String>,
 
-        #[serde(skip_serializing_if = "is_none")]
+        #[serde(skip_serializing_if = "Option::is_none")]
         pub format_string: Option<String>,
 
-        #[serde(skip_serializing_if = "is_none")]
+        #[serde(skip_serializing_if = "Option::is_none")]
         pub annotations: Option<Vec<Annotation>>,
     }
 
@@ -319,7 +319,6 @@ mod column {
 }
 
 mod partition {
-    use super::is_none;
     use super::{Deserialize, Serialize};
     use super::{Expression, Expressive};
 
@@ -327,7 +326,7 @@ mod partition {
     #[serde(rename_all = "camelCase")]
     pub struct Partition {
         pub name: String,
-        #[serde(skip_serializing_if = "is_none")]
+        #[serde(skip_serializing_if = "Option::is_none")]
         pub data_view: Option<String>,
 
         pub source: Source,
@@ -351,7 +350,7 @@ mod partition {
         #[serde(rename = "type")]
         pub type_: String,
 
-        #[serde(skip_serializing_if = "is_none")]
+        #[serde(skip_serializing_if = "Option::is_none")]
         expression: Option<Expression>,
     }
 
@@ -402,7 +401,6 @@ mod partition {
 mod measure {
     use super::{Deserialize, Serialize};
     use super::{Expression, Expressive};
-    use crate::models::skip_if::is_none;
 
     #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
     #[serde(rename_all = "camelCase")]
@@ -410,10 +408,10 @@ mod measure {
         pub name: String,
         expression: Expression,
 
-        #[serde(skip_serializing_if = "is_none")]
+        #[serde(skip_serializing_if = "Option::is_none")]
         pub format_string: Option<String>,
 
-        #[serde(skip_serializing_if = "is_none")]
+        #[serde(skip_serializing_if = "Option::is_none")]
         pub display_folder: Option<String>,
     }
 

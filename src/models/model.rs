@@ -18,7 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 use super::annotations::Annotation;
 use super::expression::ModelExpression;
-use super::skip_if::{false_, is_false, is_none};
+use super::skip_if::{false_, is_false};
 use super::table::Table;
 use super::traits::RecursiveSort;
 use super::{datasource::DataSource, relationship::Relationship, roles::Role};
@@ -37,7 +37,7 @@ pub struct Model {
     pub tables: Vec<Table>,
     pub relationships: Vec<Relationship>,
 
-    #[serde(skip_serializing_if = "is_none")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub roles: Option<Vec<Role>>,
     pub expressions: Vec<ModelExpression>,
     pub annotations: Vec<Annotation>,
