@@ -206,6 +206,8 @@ mod column {
 
         #[serde(skip_serializing_if = "Option::is_none")]
         pub annotations: Option<Vec<Annotation>>,
+
+        pub sort_by_column: String,
     }
 
     impl Attributes for Sourced {
@@ -282,7 +284,12 @@ mod column {
                     format_string: None,
                 })
             }
-            fn new_sourced(name: &str, data_type: &str, source_column: &str) -> Self {
+            fn new_sourced(
+                name: &str,
+                data_type: &str,
+                source_column: &str,
+                sort_by_column: &str,
+            ) -> Self {
                 Self::Sourced(Sourced {
                     common: CommonColumn {
                         name: name.to_string(),
@@ -290,6 +297,7 @@ mod column {
                         is_hidden: None,
                     },
                     source_column: source_column.to_string(),
+                    sort_by_column: sort_by_column.to_string(),
                     description: None,
                     format_string: None,
                     annotations: None,
@@ -301,15 +309,15 @@ mod column {
         fn test_can_sort_columns() {
             let mut columns = vec![
                 Column::new_calculated("ZZZ Calculated", "int64", "COUNTROWS(Calculations)"),
-                Column::new_sourced("ZZZ Sourced", "int64", "ZZZ Sourced"),
-                Column::new_sourced("AAA Sourced", "int64", "AAA Sourced"),
+                Column::new_sourced("ZZZ Sourced", "int64", "ZZZ Sourced", "ZZZ Sourced"),
+                Column::new_sourced("AAA Sourced", "int64", "AAA Sourced", "AAA Sourced"),
                 Column::new_calculated("AAA Calculated", "int64", "COUNTROWS(Calculated)"),
             ];
             let expected = vec![
                 Column::new_calculated("AAA Calculated", "int64", "COUNTROWS(Calculated)"),
-                Column::new_sourced("AAA Sourced", "int64", "AAA Sourced"),
+                Column::new_sourced("AAA Sourced", "int64", "AAA Sourced", "AAA Sourced"),
                 Column::new_calculated("ZZZ Calculated", "int64", "COUNTROWS(Calculations)"),
-                Column::new_sourced("ZZZ Sourced", "int64", "ZZZ Sourced"),
+                Column::new_sourced("ZZZ Sourced", "int64", "ZZZ Sourced", "ZZZ Sourced"),
             ];
 
             columns.sort();
@@ -323,6 +331,7 @@ mod column {
                     "name": "Time Horizon",
                     "dataType": "string",
                     "sourceColumn": "Name",
+                    "sortByColumn": "Ordinal"
                 }
             "#;
 
@@ -339,6 +348,7 @@ mod column {
             {
                 "name": "Time Horizon",
                 "dataType": "string",
+                "sourceColumn": "Name",
                 "sortByColumn": "Ordinal"
             }
         "#;
