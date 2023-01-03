@@ -63,7 +63,7 @@ pub fn print_warranty() {
         PURPOSE.  THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF THE PROGRAM
         IS WITH YOU.  SHOULD THE PROGRAM PROVE DEFECTIVE, YOU ASSUME THE COST OF
         ALL NECESSARY SERVICING, REPAIR OR CORRECTION."#;
-    println!("{}", WARRANTY);
+    println!("{WARRANTY}");
 }
 
 #[allow(clippy::too_many_lines)]
@@ -744,5 +744,5 @@ pub fn print_tc() {
     Public License instead of this License.  But first, please read
     <https://www.gnu.org/licenses/why-not-lgpl.html>."#;
 
-    println!("{}", TERMS_AND_CONDITIONS);
+    println!("{TERMS_AND_CONDITIONS}");
 }

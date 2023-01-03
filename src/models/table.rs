@@ -24,7 +24,7 @@ use super::annotations::Annotation;
 use super::expression::{Expression, Expressive};
 
 use self::measure::Measure;
-use super::skip_if::{false_, is_false, is_none};
+use super::skip_if::{false_, is_false};
 use super::traits::RecursiveSort;
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
@@ -37,7 +37,7 @@ pub struct Table {
     pub columns: Vec<column::Column>,
     pub partitions: Vec<Partition>,
 
-    #[serde(skip_serializing_if = "is_none")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub measures: Option<Vec<Measure>>,
 }
 
@@ -64,8 +64,8 @@ impl Ord for Table {
 }
 
 mod column {
+    use super::Annotation;
     use super::RecursiveSort;
-    use super::{is_none, Annotation};
     use super::{Expression, Expressive};
     use serde::{Deserialize, Serialize};
 
@@ -134,7 +134,7 @@ mod column {
         name: String,
         data_type: String,
 
-        #[serde(skip_serializing_if = "is_none")]
+        #[serde(skip_serializing_if = "Option::is_none")]
         is_hidden: Option<bool>,
     }
 
@@ -166,10 +166,10 @@ mod column {
         pub type_: String,
         expression: Expression,
 
-        #[serde(skip_serializing_if = "is_none")]
+        #[serde(skip_serializing_if = "Option::is_none")]
         pub is_data_type_inferred: Option<bool>,
 
-        #[serde(skip_serializing_if = "is_none")]
+        #[serde(skip_serializing_if = "Option::is_none")]
         pub format_string: Option<String>,
     }
 
@@ -198,14 +198,16 @@ mod column {
         common: CommonColumn,
         pub source_column: String,
 
-        #[serde(skip_serializing_if = "is_none")]
+        #[serde(skip_serializing_if = "Option::is_none")]
         pub description: Option<String>,
 
-        #[serde(skip_serializing_if = "is_none")]
+        #[serde(skip_serializing_if = "Option::is_none")]
         pub format_string: Option<String>,
 
-        #[serde(skip_serializing_if = "is_none")]
+        #[serde(skip_serializing_if = "Option::is_none")]
         pub annotations: Option<Vec<Annotation>>,
+
+        pub sort_by_column: String,
     }
 
     impl Attributes for Sourced {
@@ -282,7 +284,12 @@ mod column {
                     format_string: None,
                 })
             }
-            fn new_sourced(name: &str, data_type: &str, source_column: &str) -> Self {
+            fn new_sourced(
+                name: &str,
+                data_type: &str,
+                source_column: &str,
+                sort_by_column: &str,
+            ) -> Self {
                 Self::Sourced(Sourced {
                     common: CommonColumn {
                         name: name.to_string(),
@@ -290,6 +297,7 @@ mod column {
                         is_hidden: None,
                     },
                     source_column: source_column.to_string(),
+                    sort_by_column: sort_by_column.to_string(),
                     description: None,
                     format_string: None,
                     annotations: None,
@@ -301,25 +309,60 @@ mod column {
         fn test_can_sort_columns() {
             let mut columns = vec![
                 Column::new_calculated("ZZZ Calculated", "int64", "COUNTROWS(Calculations)"),
-                Column::new_sourced("ZZZ Sourced", "int64", "ZZZ Sourced"),
-                Column::new_sourced("AAA Sourced", "int64", "AAA Sourced"),
+                Column::new_sourced("ZZZ Sourced", "int64", "ZZZ Sourced", "ZZZ Sourced"),
+                Column::new_sourced("AAA Sourced", "int64", "AAA Sourced", "AAA Sourced"),
                 Column::new_calculated("AAA Calculated", "int64", "COUNTROWS(Calculated)"),
             ];
             let expected = vec![
                 Column::new_calculated("AAA Calculated", "int64", "COUNTROWS(Calculated)"),
-                Column::new_sourced("AAA Sourced", "int64", "AAA Sourced"),
+                Column::new_sourced("AAA Sourced", "int64", "AAA Sourced", "AAA Sourced"),
                 Column::new_calculated("ZZZ Calculated", "int64", "COUNTROWS(Calculations)"),
-                Column::new_sourced("ZZZ Sourced", "int64", "ZZZ Sourced"),
+                Column::new_sourced("ZZZ Sourced", "int64", "ZZZ Sourced", "ZZZ Sourced"),
             ];
 
             columns.sort();
             assert_eq!(columns, expected);
         }
+
+        #[test]
+        fn test_if_source_column_is_provided_it_should_be_outputted() {
+            let input = r#"
+                {
+                    "name": "Time Horizon",
+                    "dataType": "string",
+                    "sourceColumn": "Name",
+                    "sortByColumn": "Ordinal"
+                }
+            "#;
+
+            let column: Column = serde_json::from_str(input).unwrap();
+
+            let output = serde_json::to_string(&column).unwrap();
+
+            assert!(output.contains(r#""sourceColumn":"Name""#))
+        }
+
+        #[test]
+        fn test_if_sort_by_column_provided_it_is_in_output() {
+            let input = r#"
+            {
+                "name": "Time Horizon",
+                "dataType": "string",
+                "sourceColumn": "Name",
+                "sortByColumn": "Ordinal"
+            }
+        "#;
+
+            let column: Column = serde_json::from_str(input).unwrap();
+
+            let output = serde_json::to_string(&column).unwrap();
+
+            assert!(output.contains(r#""sortByColumn":"Ordinal""#))
+        }
     }
 }
 
 mod partition {
-    use super::is_none;
     use super::{Deserialize, Serialize};
     use super::{Expression, Expressive};
 
@@ -327,7 +370,7 @@ mod partition {
     #[serde(rename_all = "camelCase")]
     pub struct Partition {
         pub name: String,
-        #[serde(skip_serializing_if = "is_none")]
+        #[serde(skip_serializing_if = "Option::is_none")]
         pub data_view: Option<String>,
 
         pub source: Source,
@@ -351,7 +394,7 @@ mod partition {
         #[serde(rename = "type")]
         pub type_: String,
 
-        #[serde(skip_serializing_if = "is_none")]
+        #[serde(skip_serializing_if = "Option::is_none")]
         expression: Option<Expression>,
     }
 
@@ -402,7 +445,6 @@ mod partition {
 mod measure {
     use super::{Deserialize, Serialize};
     use super::{Expression, Expressive};
-    use crate::models::skip_if::is_none;
 
     #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
     #[serde(rename_all = "camelCase")]
@@ -410,10 +452,10 @@ mod measure {
         pub name: String,
         expression: Expression,
 
-        #[serde(skip_serializing_if = "is_none")]
+        #[serde(skip_serializing_if = "Option::is_none")]
         pub format_string: Option<String>,
 
-        #[serde(skip_serializing_if = "is_none")]
+        #[serde(skip_serializing_if = "Option::is_none")]
         pub display_folder: Option<String>,
     }
 
