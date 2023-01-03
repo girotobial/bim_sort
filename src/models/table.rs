@@ -315,6 +315,40 @@ mod column {
             columns.sort();
             assert_eq!(columns, expected);
         }
+
+        #[test]
+        fn test_if_source_column_is_provided_it_should_be_outputted() {
+            let input = r#"
+                {
+                    "name": "Time Horizon",
+                    "dataType": "string",
+                    "sourceColumn": "Name",
+                }
+            "#;
+
+            let column: Column = serde_json::from_str(input).unwrap();
+
+            let output = serde_json::to_string(&column).unwrap();
+
+            assert!(output.contains(r#""sourceColumn":"Name""#))
+        }
+
+        #[test]
+        fn test_if_sort_by_column_provided_it_is_in_output() {
+            let input = r#"
+            {
+                "name": "Time Horizon",
+                "dataType": "string",
+                "sortByColumn": "Ordinal"
+            }
+        "#;
+
+            let column: Column = serde_json::from_str(input).unwrap();
+
+            let output = serde_json::to_string(&column).unwrap();
+
+            assert!(output.contains(r#""sortByColumn":"Ordinal""#))
+        }
     }
 }
 
