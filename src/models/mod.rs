@@ -32,3 +32,4 @@ pub use datasource::DataSource;
 pub use expression::{Expression, Expressive};
 pub use model::Model;
 pub use relationship::Relationship;
+pub use traits::RecursiveSort;
