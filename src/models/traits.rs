@@ -25,12 +25,12 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 /// Here's an example
 ///
 /// ```
-/// use crate::models::traits::RecursiveSort;
+/// use bim_sort::models::RecursiveSort;
 ///
 ///
 /// struct Person {
 ///     id: u32,
-///     friends: Vec<'static &str>
+///     friends: Vec<String>
 /// }
 ///
 /// impl RecursiveSort for Person {
@@ -48,20 +48,20 @@ pub trait RecursiveSort {
     /// # Example
     ///
     /// ```
-    /// use crate::models::traits::RecursiveSort;
+    /// use bim_sort::models::RecursiveSort;
     ///
-    /// struct Person {
+    /// struct Person<'a> {
     ///     id: u32,
-    ///     friends: Vec<'static &str>
+    ///     friends: Vec<&'a str>
     /// }
     ///
-    /// impl RecursiveSort for Person {
+    /// impl<'a> RecursiveSort for Person<'a> {
     ///     fn recursive_sort(&mut self) {
     ///         self.friends.sort();
     ///     }
     /// }
     ///
-    /// let mut person = Person {id: 1, friends: vec!["Geoff", "Bob", "Charlie"]}
+    /// let mut person = Person {id: 1, friends: vec!["Geoff", "Bob", "Charlie"]};
     /// person.recursive_sort();
     /// assert_eq!(person.friends, vec!["Bob", "Charlie", "Geoff"])
     /// ```
@@ -74,7 +74,7 @@ impl<T: RecursiveSort + Ord> RecursiveSort for Vec<T> {
     /// # Example
     ///
     /// ```
-    /// use crate::models::traits::RecursiveSort;
+    /// use bim_sort::models::RecursiveSort;
     ///
     /// struct Database {
     ///     tables: Vec<Table>
@@ -86,13 +86,14 @@ impl<T: RecursiveSort + Ord> RecursiveSort for Vec<T> {
     ///     }
     /// }
     ///
+    /// #[derive(PartialEq, Eq)]
     /// struct Table {
-    ///     name: String
+    ///     name: String,
     ///     columns: Vec<Column>
     /// }
     ///
     /// impl Ord for Table {
-    ///     fn cmp(&self, other: &Self) {
+    ///     fn cmp(&self, other: &Self) -> std::cmp::Ordering {
     ///         self.name.cmp(&other.name)
     ///     }
     /// }
