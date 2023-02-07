@@ -517,3 +517,35 @@ mod measure {
         }
     }
 }
+
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct CalculationItem {}
+
+#[cfg(test)]
+mod tests {
+    use super::CalculationItem;
+    use serde_json::json;
+
+    #[test]
+    fn can_build_calculation_item_from_json() {
+        let input = json!(
+            {
+                "name": "Next Day",
+                "expression": [
+                    "CALCULATE (",
+                    "    SELECTEDMEASURE (),",
+                    "    FILTER ( CourseDate, CourseDate[day_offset] <= 1 )",
+                    ")"
+                ],
+                "ordinal": 0
+            }
+        );
+
+        let item: CalculationItem = serde_json::from_str(input.to_string().as_str())
+            .expect("Could not create CalculationItem");
+        let output = serde_json::to_value(item).expect("Could not convert back to value");
+
+        assert_eq!(input, output);
+    }
+}
