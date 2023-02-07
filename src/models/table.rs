@@ -520,7 +520,11 @@ mod measure {
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
-pub(crate) struct CalculationItem {}
+pub(crate) struct CalculationItem {
+    name: String,
+    expression: Expression,
+    ordinal: u32,
+}
 
 #[cfg(test)]
 mod tests {
