@@ -207,7 +207,8 @@ mod column {
         #[serde(skip_serializing_if = "Option::is_none")]
         pub annotations: Option<Vec<Annotation>>,
 
-        pub sort_by_column: String,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub sort_by_column: Option<String>,
     }
 
     impl Attributes for Sourced {
@@ -297,7 +298,7 @@ mod column {
                         is_hidden: None,
                     },
                     source_column: source_column.to_string(),
-                    sort_by_column: sort_by_column.to_string(),
+                    sort_by_column: Some(sort_by_column.to_string()),
                     description: None,
                     format_string: None,
                     annotations: None,
@@ -538,7 +539,7 @@ pub(crate) struct CalculationGroup {
 
 #[cfg(test)]
 mod tests {
-    use super::{CalculationGroup, CalculationItem};
+    use super::{CalculationGroup, CalculationItem, Table};
     use serde_json::json;
 
     trait FromValue {
@@ -561,13 +562,13 @@ mod tests {
         }
     }
 
-    fn there_and_back_test<T: ToValue, F>(input: &serde_json::Value, f: F)
+    fn there_and_back_test<T: ToValue, F>(input: serde_json::Value, f: F)
     where
         F: Fn(&serde_json::Value) -> T,
     {
-        let item = f(input);
+        let item = f(&input);
         let output = item.to_value();
-        assert_eq!(*input, output);
+        assert_eq!(input, output);
     }
 
     #[test]
@@ -585,7 +586,7 @@ mod tests {
             }
         );
 
-        there_and_back_test(&input, CalculationItem::from_value);
+        there_and_back_test(input, CalculationItem::from_value);
     }
 
     #[test]
@@ -615,7 +616,7 @@ mod tests {
             }
         );
 
-        there_and_back_test(&input, CalculationItem::from_value);
+        there_and_back_test(input, CalculationItem::from_value);
     }
 
     #[test]
@@ -632,7 +633,7 @@ mod tests {
             }
         );
 
-        there_and_back_test(&input, CalculationItem::from_value);
+        there_and_back_test(input, CalculationItem::from_value);
     }
 
     #[test]
@@ -643,7 +644,7 @@ mod tests {
             }
         );
 
-        there_and_back_test(&input, CalculationItem::from_value);
+        there_and_back_test(input, CalculationItem::from_value);
     }
 
     #[test]
@@ -665,7 +666,7 @@ mod tests {
             }
         );
 
-        there_and_back_test(&input, CalculationGroup::from_value)
+        there_and_back_test(input, CalculationGroup::from_value)
     }
 
     #[test]
@@ -675,6 +676,98 @@ mod tests {
                 "calculationItems": []
             }
         );
-        there_and_back_test(&input, CalculationGroup::from_value);
+        there_and_back_test(input, CalculationGroup::from_value);
+    }
+
+    #[test]
+    fn can_create_table_with_a_calculation_group() {
+        let input = json!(
+            {
+                "name": "A Table",
+                "calculationGroup": [
+                    {
+                        "name": "CalculationItem 1"
+                    }
+                ],
+                "columns": [
+                    {
+                        "name": "CalculationItemColumn 1",
+                        "dataType": "string",
+                        "sourceColumn": "Name"
+                    }
+                ],
+                "partitions": [
+                    {
+                        "name": "CalculationGroup 1",
+                        "mode": "import",
+                        "source": {
+                            "type": "calculationGroup"
+                        }
+                    }
+                ]
+            }
+        );
+
+        there_and_back_test(input, Table::from_value);
+    }
+
+    #[test]
+    fn can_create_table_without_calculation_group() {
+        let input = json!(
+            {
+                "name": "arrival_time",
+                "columns": [
+                    {
+                    "name": "time",
+                    "dataType": "int64",
+                    "isHidden": true,
+                    "sourceColumn": "time"
+                    },
+                    {
+                    "name": "MinutesInDay",
+                    "dataType": "int64",
+                    "isHidden": true,
+                    "sourceColumn": "MinutesInDay"
+                    },
+                    {
+                    "name": "DayNum",
+                    "dataType": "int64",
+                    "sourceColumn": "DayNum"
+                    },
+                    {
+                    "name": "Hour",
+                    "dataType": "int64",
+                    "sourceColumn": "Hour"
+                    },
+                    {
+                    "name": "Minutes",
+                    "dataType": "int64",
+                    "sourceColumn": "Minutes"
+                    },
+                    {
+                    "name": "Timestamp",
+                    "dataType": "dateTime",
+                    "sourceColumn": "Timestamp"
+                    }
+                ],
+                "partitions": [
+                    {
+                    "name": "Partition",
+                    "dataView": "full",
+                    "source": {
+                        "type": "m",
+                        "expression": [
+                        "let",
+                        "    Source = #\"times ref\"",
+                        "in",
+                        "    Source"
+                        ]
+                    }
+                    }
+                ]
+            }
+        );
+
+        there_and_back_test(input, Table::from_value);
     }
 }
