@@ -39,6 +39,9 @@ pub struct Table {
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub measures: Option<Vec<Measure>>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    calculation_group: Option<CalculationGroup>,
 }
 
 impl RecursiveSort for Table {
@@ -370,6 +373,9 @@ mod partition {
     #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
     #[serde(rename_all = "camelCase")]
     pub struct Partition {
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub mode: Option<String>,
+
         pub name: String,
         #[serde(skip_serializing_if = "Option::is_none")]
         pub data_view: Option<String>,
@@ -412,6 +418,7 @@ mod partition {
         impl Partition {
             fn new(name: &str, dataview: &str, source: Source) -> Self {
                 Self {
+                    mode: None,
                     name: name.to_string(),
                     data_view: Some(dataview.to_string()),
                     source,
@@ -683,12 +690,14 @@ mod tests {
     fn can_create_table_with_a_calculation_group() {
         let input = json!(
             {
-                "name": "A Table",
-                "calculationGroup": [
-                    {
-                        "name": "CalculationItem 1"
-                    }
-                ],
+                "name": "CalculationGroup 1",
+                "calculationGroup": {
+                    "calculationItems": [
+                        {
+                            "name": "CalculationItem 1"
+                        }
+                    ]
+                },
                 "columns": [
                     {
                         "name": "CalculationItemColumn 1",
