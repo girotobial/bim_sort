@@ -51,6 +51,10 @@ impl RecursiveSort for Table {
         if let Some(v) = &mut self.measures {
             v.sort();
         }
+
+        if let Some(c) = &mut self.calculation_group {
+            c.recursive_sort();
+        }
     }
 }
 
@@ -535,13 +539,52 @@ pub(crate) struct CalculationItem {
     expression: Option<Expression>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    ordinal: Option<u32>,
+    ordinal: Option<i32>,
+}
+
+impl PartialOrd for CalculationItem {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl CalculationItem {
+    fn cmp_ordinal(&self, other: &Self) -> std::cmp::Ordering {
+        match (self.ordinal, other.ordinal) {
+            (Some(s), Some(o)) => s.cmp(&o),
+            (Some(_), None) => std::cmp::Ordering::Less,
+            (None, Some(_)) => std::cmp::Ordering::Greater,
+            (None, None) => std::cmp::Ordering::Equal,
+        }
+    }
+
+    fn cmp_name(&self, other: &Self) -> std::cmp::Ordering {
+        self.name.cmp(&other.name)
+    }
+}
+
+impl Ord for CalculationItem {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        use std::cmp::Ordering::*;
+
+        let ordinal_cmp = self.cmp_ordinal(other);
+        match ordinal_cmp {
+            Equal => self.cmp_name(other),
+            _ => ordinal_cmp,
+        }
+    }
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub(crate) struct CalculationGroup {
     calculation_items: Vec<CalculationItem>,
+}
+
+impl RecursiveSort for CalculationGroup {
+    fn recursive_sort(&mut self) {
+        self.calculation_items.sort();
+    }
 }
 
 #[cfg(test)]
@@ -684,6 +727,91 @@ mod tests {
             }
         );
         there_and_back_test(input, CalculationGroup::from_value);
+    }
+
+    fn test_sort<T: Ord + std::fmt::Debug, F>(inputs: [serde_json::Value; 2], f: F)
+    where
+        F: Fn(&serde_json::Value) -> T,
+    {
+        use std::rc::Rc;
+        let item_one = Rc::new(f(&inputs[0]));
+        let item_two = Rc::new(f(&inputs[1]));
+
+        let mut items = [Rc::clone(&item_one), Rc::clone(&item_two)];
+        let expected = [item_two, item_one];
+
+        items.sort();
+
+        assert_eq!(items, expected);
+    }
+
+    #[test]
+    fn calculation_items_can_sort_by_name() {
+        let input_one = json!(
+            {
+                "name": "Next Day",
+            }
+        );
+        let input_two = json!(
+            {
+                "name": "Yesterday"
+            }
+        );
+
+        test_sort([input_two, input_one], CalculationItem::from_value);
+    }
+
+    #[test]
+    fn calculation_items_prioritise_sort_by_ordinal() {
+        let input_one = json!(
+            {
+                "name": "Next Day",
+                "ordinal": 1
+            }
+        );
+        let input_two = json!(
+            {
+                "name": "Yesterday",
+                "ordinal": 0
+            }
+        );
+
+        test_sort([input_one, input_two], CalculationItem::from_value);
+    }
+
+    #[test]
+    fn calculation_items_sort_by_name_if_ordinal_equal() {
+        let input_one = json!(
+            {
+                "name": "Next Day",
+                "ordinal": 0
+            }
+        );
+        let input_two = json!(
+            {
+                "name": "Yesterday",
+                "ordinal": 0
+            }
+        );
+
+        test_sort([input_two, input_one], CalculationItem::from_value);
+    }
+
+    #[test]
+    fn calculation_items_sort_ordinals_first_if_other_only_has_name() {
+        let input_one = json!(
+            {
+                "name": "Next Day",
+            }
+        );
+        let input_two = json!(
+            {
+                "name": "Yesterday",
+                "ordinal": 0
+            }
+        );
+
+        test_sort([input_one, input_two], CalculationItem::from_value);
     }
 
     #[test]
