@@ -526,17 +526,32 @@ pub(crate) struct CalculationItem {
     ordinal: u32,
 }
 
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct CalculationGroup {
+    calculation_items: Vec<CalculationItem>,
+}
+
 #[cfg(test)]
 mod tests {
-    use super::CalculationItem;
+    use super::{CalculationGroup, CalculationItem};
     use serde_json::json;
 
-    impl CalculationItem {
-        fn from_value(value: &serde_json::Value) -> Self {
-            serde_json::from_str(value.to_string().as_str())
-                .expect("Could not convert input to CalculationItem")
-        }
+    trait FromValue {
+        fn from_value(value: &serde_json::Value) -> Self;
+    }
 
+    impl<T: for<'a> serde::Deserialize<'a>> FromValue for T {
+        fn from_value(value: &serde_json::Value) -> Self {
+            serde_json::from_str(value.to_string().as_str()).expect("Could not convert input.")
+        }
+    }
+
+    trait ToValue {
+        fn to_value(&self) -> serde_json::Value;
+    }
+
+    impl<T: serde::Serialize> ToValue for T {
         fn to_value(&self) -> serde_json::Value {
             serde_json::to_value(self).expect("Could not convert back to value")
         }
@@ -610,5 +625,42 @@ mod tests {
         );
 
         CalculationItem::from_value(&input);
+    }
+
+    #[test]
+    fn can_create_calculation_group_from_json() {
+        let input = json!(
+            {
+                "calculationItems": [
+                    {
+                        "name": "Next Day",
+                        "expression": [
+                            "CALCULATE (",
+                            "    SELECTEDMEASURE (),",
+                            "    FILTER ( CourseDate, CourseDate[day_offset] <= 1 )",
+                            ")"
+                        ],
+                        "ordinal": 1
+                    }
+                ]
+            }
+        );
+
+        let cg = CalculationGroup::from_value(&input);
+        let output = cg.to_value();
+        assert_eq!(input, output);
+    }
+
+    #[test]
+    fn can_create_calculation_group_with_empty_calculation_items() {
+        let input = json!(
+            {
+                "calculationItems": []
+            }
+        );
+
+        let cg = CalculationGroup::from_value(&input);
+        let output = cg.to_value();
+        assert_eq!(input, output);
     }
 }
