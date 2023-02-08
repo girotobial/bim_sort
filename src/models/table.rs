@@ -522,8 +522,12 @@ mod measure {
 #[serde(rename_all = "camelCase")]
 pub(crate) struct CalculationItem {
     name: String,
-    expression: Expression,
-    ordinal: u32,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    expression: Option<Expression>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    ordinal: Option<u32>,
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
@@ -603,8 +607,7 @@ mod tests {
     }
 
     #[test]
-    #[should_panic]
-    fn calculation_item_fails_without_an_expression() {
+    fn calculation_item_succeeds_without_an_expression() {
         let input = json!(
             {
                 "name": "Next Day",
@@ -612,12 +615,11 @@ mod tests {
             }
         );
 
-        CalculationItem::from_value(&input);
+        there_and_back_test(&input, CalculationItem::from_value);
     }
 
     #[test]
-    #[should_panic]
-    fn calculation_item_fails_without_an_ordinal() {
+    fn calculation_item_succeeds_without_an_ordinal() {
         let input = json!(
             {
                 "name": "Next Day",
@@ -630,7 +632,18 @@ mod tests {
             }
         );
 
-        CalculationItem::from_value(&input);
+        there_and_back_test(&input, CalculationItem::from_value);
+    }
+
+    #[test]
+    fn calculation_item_succeeds_with_name_only() {
+        let input = json!(
+            {
+                "name": "CalculationItem 1"
+            }
+        );
+
+        there_and_back_test(&input, CalculationItem::from_value);
     }
 
     #[test]
