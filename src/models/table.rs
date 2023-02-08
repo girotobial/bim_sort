@@ -531,6 +531,17 @@ mod tests {
     use super::CalculationItem;
     use serde_json::json;
 
+    impl CalculationItem {
+        fn from_value(value: &serde_json::Value) -> Self {
+            serde_json::from_str(value.to_string().as_str())
+                .expect("Could not convert input to CalculationItem")
+        }
+
+        fn to_value(&self) -> serde_json::Value {
+            serde_json::to_value(self).expect("Could not convert back to value")
+        }
+    }
+
     #[test]
     fn can_build_calculation_item_from_json() {
         let input = json!(
@@ -546,10 +557,58 @@ mod tests {
             }
         );
 
-        let item: CalculationItem = serde_json::from_str(input.to_string().as_str())
-            .expect("Could not create CalculationItem");
-        let output = serde_json::to_value(item).expect("Could not convert back to value");
+        let item = CalculationItem::from_value(&input);
+        let output = item.to_value();
 
         assert_eq!(input, output);
+    }
+
+    #[test]
+    #[should_panic]
+    fn calculation_item_fails_without_a_name() {
+        let input = json!(
+            {
+                "expression": [
+                    "CALCULATE (",
+                    "    SELECTEDMEASURE (),",
+                    "    FILTER ( CourseDate, CourseDate[day_offset] <= 1 )",
+                    ")"
+                ],
+                "ordinal": 0
+            }
+        );
+
+        CalculationItem::from_value(&input);
+    }
+
+    #[test]
+    #[should_panic]
+    fn calculation_item_fails_without_an_expression() {
+        let input = json!(
+            {
+                "name": "Next Day",
+                "ordinal": 0
+            }
+        );
+
+        CalculationItem::from_value(&input);
+    }
+
+    #[test]
+    #[should_panic]
+    fn calculation_item_fails_without_an_ordinal() {
+        let input = json!(
+            {
+                "name": "Next Day",
+                "expression": [
+                    "CALCULATE (",
+                    "    SELECTEDMEASURE (),",
+                    "    FILTER ( CourseDate, CourseDate[day_offset] <= 1 )",
+                    ")"
+                ]
+            }
+        );
+
+        CalculationItem::from_value(&input);
     }
 }
