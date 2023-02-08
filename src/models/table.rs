@@ -718,51 +718,51 @@ mod tests {
                 "name": "arrival_time",
                 "columns": [
                     {
-                    "name": "time",
-                    "dataType": "int64",
-                    "isHidden": true,
-                    "sourceColumn": "time"
+                        "name": "time",
+                        "dataType": "int64",
+                        "isHidden": true,
+                        "sourceColumn": "time"
                     },
                     {
-                    "name": "MinutesInDay",
-                    "dataType": "int64",
-                    "isHidden": true,
-                    "sourceColumn": "MinutesInDay"
+                        "name": "MinutesInDay",
+                        "dataType": "int64",
+                        "isHidden": true,
+                        "sourceColumn": "MinutesInDay"
                     },
                     {
-                    "name": "DayNum",
-                    "dataType": "int64",
-                    "sourceColumn": "DayNum"
+                        "name": "DayNum",
+                        "dataType": "int64",
+                        "sourceColumn": "DayNum"
                     },
                     {
-                    "name": "Hour",
-                    "dataType": "int64",
-                    "sourceColumn": "Hour"
+                        "name": "Hour",
+                        "dataType": "int64",
+                        "sourceColumn": "Hour"
                     },
                     {
-                    "name": "Minutes",
-                    "dataType": "int64",
-                    "sourceColumn": "Minutes"
+                        "name": "Minutes",
+                        "dataType": "int64",
+                        "sourceColumn": "Minutes"
                     },
                     {
-                    "name": "Timestamp",
-                    "dataType": "dateTime",
-                    "sourceColumn": "Timestamp"
+                        "name": "Timestamp",
+                        "dataType": "dateTime",
+                        "sourceColumn": "Timestamp"
                     }
                 ],
                 "partitions": [
                     {
-                    "name": "Partition",
-                    "dataView": "full",
-                    "source": {
-                        "type": "m",
-                        "expression": [
-                        "let",
-                        "    Source = #\"times ref\"",
-                        "in",
-                        "    Source"
-                        ]
-                    }
+                        "name": "Partition",
+                        "dataView": "full",
+                        "source": {
+                            "type": "m",
+                            "expression": [
+                                "let",
+                                "    Source = #\"times ref\"",
+                                "in",
+                                "    Source"
+                            ]
+                        }
                     }
                 ]
             }
