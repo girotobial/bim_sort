@@ -557,6 +557,15 @@ mod tests {
         }
     }
 
+    fn there_and_back_test<T: ToValue, F>(input: &serde_json::Value, f: F)
+    where
+        F: Fn(&serde_json::Value) -> T,
+    {
+        let item = f(input);
+        let output = item.to_value();
+        assert_eq!(*input, output);
+    }
+
     #[test]
     fn can_build_calculation_item_from_json() {
         let input = json!(
@@ -572,10 +581,7 @@ mod tests {
             }
         );
 
-        let item = CalculationItem::from_value(&input);
-        let output = item.to_value();
-
-        assert_eq!(input, output);
+        there_and_back_test(&input, CalculationItem::from_value);
     }
 
     #[test]
@@ -646,9 +652,7 @@ mod tests {
             }
         );
 
-        let cg = CalculationGroup::from_value(&input);
-        let output = cg.to_value();
-        assert_eq!(input, output);
+        there_and_back_test(&input, CalculationGroup::from_value)
     }
 
     #[test]
@@ -658,9 +662,6 @@ mod tests {
                 "calculationItems": []
             }
         );
-
-        let cg = CalculationGroup::from_value(&input);
-        let output = cg.to_value();
-        assert_eq!(input, output);
+        there_and_back_test(&input, CalculationGroup::from_value);
     }
 }
