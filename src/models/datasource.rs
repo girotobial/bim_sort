@@ -52,6 +52,9 @@ pub enum ConnectionDetails {
 
     #[serde(rename = "postgresql")]
     PostgresSql(SqlConnection),
+
+    #[serde(rename = "mysql")]
+    MySql(SqlConnection),
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
@@ -73,7 +76,7 @@ pub enum Address {
         #[serde(skip_serializing_if = "Option::is_none")]
         collection: Option<String>,
     },
-    Tds {
+    SqlDatabase {
         server: String,
         database: String,
     },
@@ -307,5 +310,22 @@ mod test {
         );
 
         there_and_back_test(data, DataSource::from_value);
+    }
+
+    #[test]
+    fn readwrite_mysql_connection_details() {
+        let data = json!(
+            {
+                "protocol": "mysql",
+                "address": {
+                    "server": "db.mysql.database.com",
+                    "database": "MySQLDB"
+                },
+                "authentication": null,
+                "query": null
+            }
+        );
+
+        there_and_back_test(data, ConnectionDetails::from_value);
     }
 }
