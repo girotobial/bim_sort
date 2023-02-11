@@ -590,36 +590,8 @@ impl RecursiveSort for CalculationGroup {
 #[cfg(test)]
 mod tests {
     use super::{CalculationGroup, CalculationItem, Table};
+    use crate::models::test::{there_and_back_test, FromValue};
     use serde_json::json;
-
-    trait FromValue {
-        fn from_value(value: &serde_json::Value) -> Self;
-    }
-
-    impl<T: for<'a> serde::Deserialize<'a>> FromValue for T {
-        fn from_value(value: &serde_json::Value) -> Self {
-            serde_json::from_str(value.to_string().as_str()).expect("Could not convert input.")
-        }
-    }
-
-    trait ToValue {
-        fn to_value(&self) -> serde_json::Value;
-    }
-
-    impl<T: serde::Serialize> ToValue for T {
-        fn to_value(&self) -> serde_json::Value {
-            serde_json::to_value(self).expect("Could not convert back to value")
-        }
-    }
-
-    fn there_and_back_test<T: ToValue, F>(input: serde_json::Value, f: F)
-    where
-        F: Fn(&serde_json::Value) -> T,
-    {
-        let item = f(&input);
-        let output = item.to_value();
-        assert_eq!(input, output);
-    }
 
     #[test]
     fn can_build_calculation_item_from_json() {
