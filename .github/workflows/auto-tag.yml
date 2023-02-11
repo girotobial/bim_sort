@@ -1,0 +1,29 @@
+name: PreRelease
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - id: compute_tag
+        uses: craig-day/compute-tag@v14 # Version 15 is broken
+        with: 
+          github_token: ${{ github.token }}
+          version_scheme: semantic
+          version_type: prerelease
+      
+      - name: create release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: ${{ steps.compute_tag.outputs.next_tag }}
+          tag_name: ${{ steps.compute_tag.outputs.next_tag }}
+          generate_release_notes: true
+          prerelease: true
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
