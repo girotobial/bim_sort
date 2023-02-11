@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Added
 - Support for Calculation Groups.
+- Support for Privacy Levels in Data Sources.
+- Support for PostgresSQL Data Sources
+- Support for MySQL Data Sources.
 
 
 ## [0.1.2] - 2023-01-03
