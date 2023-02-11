@@ -48,17 +48,17 @@ pub enum ConnectionDetails {
     DocumentDb { address: Address },
 
     #[serde(rename = "tds")]
-    Tds {
-        address: Address,
+    Tds(SqlConnection),
 
-        #[serde(skip_serializing_if = "Option::is_none")]
-        authentication: Option<String>,
-
-        #[serde(skip_serializing_if = "Option::is_none")]
-        query: Option<String>,
-    },
     #[serde(rename = "postgresql")]
-    PostgresSql { address: Address },
+    PostgresSql(SqlConnection),
+}
+
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
+pub struct SqlConnection {
+    address: Address,
+    authentication: Option<String>,
+    query: Option<String>,
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
@@ -143,6 +143,9 @@ impl Credential for CredentialType {
 mod test {
     use super::*;
     use serde_json;
+    use serde_json::json;
+
+    use crate::models::test::{there_and_back_test, FromValue};
 
     #[test]
     fn test_correctly_deserialize_key_credential() {
@@ -259,5 +262,50 @@ mod test {
         datasources.sort();
         datasources.reverse();
         assert_eq!(expected, datasources);
+    }
+
+    #[test]
+    fn readwrite_postgressql_connection_details() {
+        let data = json!(
+            {
+                "protocol": "postgresql",
+                "address": {
+                    "server": "localhost:5432",
+                    "database": "flight_db"
+                },
+                "authentication": null,
+                "query": null
+            }
+        );
+
+        there_and_back_test(data, ConnectionDetails::from_value);
+    }
+
+    #[test]
+    fn readwrite_postgressql_datasource() {
+        let data = json!(
+            {
+                "type": "structured",
+                "name": "PostgreSQL/localhost:5432;flight_db",
+                "connectionDetails": {
+                    "protocol": "postgresql",
+                    "address": {
+                        "server": "localhost:5432",
+                        "database": "flight_db"
+                    },
+                    "authentication": null,
+                    "query": null
+                },
+                "credential": {
+                    "AuthenticationKind": "UsernamePassword",
+                    "kind": "PostgreSQL",
+                    "path": "localhost:5432;flight_db",
+                    "Username": "username",
+                    "EncryptConnection": false
+                }
+            }
+        );
+
+        there_and_back_test(data, DataSource::from_value);
     }
 }
