@@ -20,6 +20,7 @@ pub use io::Result;
 use std::fs;
 use std::io;
 use std::path::PathBuf;
+use std::str::FromStr;
 
 use serde::{Deserialize, Serialize};
 
@@ -38,12 +39,12 @@ pub struct Bim {
 impl Bim {
     pub fn from_file(path: &PathBuf) -> io::Result<Self> {
         let data = fs::read_to_string(path)?;
-        let res: Self = serde_json::from_str(&data)?;
+        let res = Self::from_str(&data)?;
         Ok(res)
     }
 
     pub fn to_file(&self, path: &PathBuf) -> io::Result<()> {
-        let contents = serde_json::to_string_pretty(self)?;
+        let contents = self.to_string();
         fs::write(path, contents)?;
         Ok(())
     }
@@ -51,5 +52,19 @@ impl Bim {
     pub fn sort(&mut self) {
         use super::traits::RecursiveSort;
         self.model.recursive_sort();
+    }
+}
+
+impl FromStr for Bim {
+    type Err = serde_json::Error;
+
+    fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
+        serde_json::from_str(s)
+    }
+}
+
+impl ToString for Bim {
+    fn to_string(&self) -> String {
+        serde_json::to_string_pretty(self).unwrap_or_else(|_| String::from("null"))
     }
 }
