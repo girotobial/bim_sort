@@ -39,6 +39,9 @@ pub struct Table {
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub measures: Option<Vec<Measure>>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    calculation_group: Option<CalculationGroup>,
 }
 
 impl RecursiveSort for Table {
@@ -47,6 +50,10 @@ impl RecursiveSort for Table {
         self.columns.sort();
         if let Some(v) = &mut self.measures {
             v.sort();
+        }
+
+        if let Some(c) = &mut self.calculation_group {
+            c.recursive_sort();
         }
     }
 }
@@ -207,7 +214,8 @@ mod column {
         #[serde(skip_serializing_if = "Option::is_none")]
         pub annotations: Option<Vec<Annotation>>,
 
-        pub sort_by_column: String,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub sort_by_column: Option<String>,
     }
 
     impl Attributes for Sourced {
@@ -297,7 +305,7 @@ mod column {
                         is_hidden: None,
                     },
                     source_column: source_column.to_string(),
-                    sort_by_column: sort_by_column.to_string(),
+                    sort_by_column: Some(sort_by_column.to_string()),
                     description: None,
                     format_string: None,
                     annotations: None,
@@ -369,6 +377,9 @@ mod partition {
     #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
     #[serde(rename_all = "camelCase")]
     pub struct Partition {
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub mode: Option<String>,
+
         pub name: String,
         #[serde(skip_serializing_if = "Option::is_none")]
         pub data_view: Option<String>,
@@ -411,6 +422,7 @@ mod partition {
         impl Partition {
             fn new(name: &str, dataview: &str, source: Source) -> Self {
                 Self {
+                    mode: None,
                     name: name.to_string(),
                     data_view: Some(dataview.to_string()),
                     source,
@@ -515,5 +527,356 @@ mod measure {
             measures.sort();
             assert_eq!(measures, expected);
         }
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct CalculationItem {
+    name: String,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    expression: Option<Expression>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    ordinal: Option<i32>,
+}
+
+impl PartialOrd for CalculationItem {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl CalculationItem {
+    fn cmp_ordinal(&self, other: &Self) -> std::cmp::Ordering {
+        match (self.ordinal, other.ordinal) {
+            (Some(s), Some(o)) => s.cmp(&o),
+            (Some(_), None) => std::cmp::Ordering::Less,
+            (None, Some(_)) => std::cmp::Ordering::Greater,
+            (None, None) => std::cmp::Ordering::Equal,
+        }
+    }
+
+    fn cmp_name(&self, other: &Self) -> std::cmp::Ordering {
+        self.name.cmp(&other.name)
+    }
+}
+
+impl Ord for CalculationItem {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        use std::cmp::Ordering::*;
+
+        let ordinal_cmp = self.cmp_ordinal(other);
+        match ordinal_cmp {
+            Equal => self.cmp_name(other),
+            _ => ordinal_cmp,
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct CalculationGroup {
+    calculation_items: Vec<CalculationItem>,
+}
+
+impl RecursiveSort for CalculationGroup {
+    fn recursive_sort(&mut self) {
+        self.calculation_items.sort();
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{CalculationGroup, CalculationItem, Table};
+    use crate::models::test::{there_and_back_test, FromValue};
+    use serde_json::json;
+
+    #[test]
+    fn can_build_calculation_item_from_json() {
+        let input = json!(
+            {
+                "name": "Next Day",
+                "expression": [
+                    "CALCULATE (",
+                    "    SELECTEDMEASURE (),",
+                    "    FILTER ( CourseDate, CourseDate[day_offset] <= 1 )",
+                    ")"
+                ],
+                "ordinal": 0
+            }
+        );
+
+        there_and_back_test(input, CalculationItem::from_value);
+    }
+
+    #[test]
+    #[should_panic]
+    fn calculation_item_fails_without_a_name() {
+        let input = json!(
+            {
+                "expression": [
+                    "CALCULATE (",
+                    "    SELECTEDMEASURE (),",
+                    "    FILTER ( CourseDate, CourseDate[day_offset] <= 1 )",
+                    ")"
+                ],
+                "ordinal": 0
+            }
+        );
+
+        CalculationItem::from_value(&input);
+    }
+
+    #[test]
+    fn calculation_item_succeeds_without_an_expression() {
+        let input = json!(
+            {
+                "name": "Next Day",
+                "ordinal": 0
+            }
+        );
+
+        there_and_back_test(input, CalculationItem::from_value);
+    }
+
+    #[test]
+    fn calculation_item_succeeds_without_an_ordinal() {
+        let input = json!(
+            {
+                "name": "Next Day",
+                "expression": [
+                    "CALCULATE (",
+                    "    SELECTEDMEASURE (),",
+                    "    FILTER ( CourseDate, CourseDate[day_offset] <= 1 )",
+                    ")"
+                ]
+            }
+        );
+
+        there_and_back_test(input, CalculationItem::from_value);
+    }
+
+    #[test]
+    fn calculation_item_succeeds_with_name_only() {
+        let input = json!(
+            {
+                "name": "CalculationItem 1"
+            }
+        );
+
+        there_and_back_test(input, CalculationItem::from_value);
+    }
+
+    #[test]
+    fn can_create_calculation_group_from_json() {
+        let input = json!(
+            {
+                "calculationItems": [
+                    {
+                        "name": "Next Day",
+                        "expression": [
+                            "CALCULATE (",
+                            "    SELECTEDMEASURE (),",
+                            "    FILTER ( CourseDate, CourseDate[day_offset] <= 1 )",
+                            ")"
+                        ],
+                        "ordinal": 1
+                    }
+                ]
+            }
+        );
+
+        there_and_back_test(input, CalculationGroup::from_value)
+    }
+
+    #[test]
+    fn can_create_calculation_group_with_empty_calculation_items() {
+        let input = json!(
+            {
+                "calculationItems": []
+            }
+        );
+        there_and_back_test(input, CalculationGroup::from_value);
+    }
+
+    fn test_sort<T: Ord + std::fmt::Debug, F>(inputs: [serde_json::Value; 2], f: F)
+    where
+        F: Fn(&serde_json::Value) -> T,
+    {
+        use std::rc::Rc;
+        let item_one = Rc::new(f(&inputs[0]));
+        let item_two = Rc::new(f(&inputs[1]));
+
+        let mut items = [Rc::clone(&item_one), Rc::clone(&item_two)];
+        let expected = [item_two, item_one];
+
+        items.sort();
+
+        assert_eq!(items, expected);
+    }
+
+    #[test]
+    fn calculation_items_can_sort_by_name() {
+        let input_one = json!(
+            {
+                "name": "Next Day",
+            }
+        );
+        let input_two = json!(
+            {
+                "name": "Yesterday"
+            }
+        );
+
+        test_sort([input_two, input_one], CalculationItem::from_value);
+    }
+
+    #[test]
+    fn calculation_items_prioritise_sort_by_ordinal() {
+        let input_one = json!(
+            {
+                "name": "Next Day",
+                "ordinal": 1
+            }
+        );
+        let input_two = json!(
+            {
+                "name": "Yesterday",
+                "ordinal": 0
+            }
+        );
+
+        test_sort([input_one, input_two], CalculationItem::from_value);
+    }
+
+    #[test]
+    fn calculation_items_sort_by_name_if_ordinal_equal() {
+        let input_one = json!(
+            {
+                "name": "Next Day",
+                "ordinal": 0
+            }
+        );
+        let input_two = json!(
+            {
+                "name": "Yesterday",
+                "ordinal": 0
+            }
+        );
+
+        test_sort([input_two, input_one], CalculationItem::from_value);
+    }
+
+    #[test]
+    fn calculation_items_sort_ordinals_first_if_other_only_has_name() {
+        let input_one = json!(
+            {
+                "name": "Next Day",
+            }
+        );
+        let input_two = json!(
+            {
+                "name": "Yesterday",
+                "ordinal": 0
+            }
+        );
+
+        test_sort([input_one, input_two], CalculationItem::from_value);
+    }
+
+    #[test]
+    fn can_create_table_with_a_calculation_group() {
+        let input = json!(
+            {
+                "name": "CalculationGroup 1",
+                "calculationGroup": {
+                    "calculationItems": [
+                        {
+                            "name": "CalculationItem 1"
+                        }
+                    ]
+                },
+                "columns": [
+                    {
+                        "name": "CalculationItemColumn 1",
+                        "dataType": "string",
+                        "sourceColumn": "Name"
+                    }
+                ],
+                "partitions": [
+                    {
+                        "name": "CalculationGroup 1",
+                        "mode": "import",
+                        "source": {
+                            "type": "calculationGroup"
+                        }
+                    }
+                ]
+            }
+        );
+
+        there_and_back_test(input, Table::from_value);
+    }
+
+    #[test]
+    fn can_create_table_without_calculation_group() {
+        let input = json!(
+            {
+                "name": "arrival_time",
+                "columns": [
+                    {
+                        "name": "time",
+                        "dataType": "int64",
+                        "isHidden": true,
+                        "sourceColumn": "time"
+                    },
+                    {
+                        "name": "MinutesInDay",
+                        "dataType": "int64",
+                        "isHidden": true,
+                        "sourceColumn": "MinutesInDay"
+                    },
+                    {
+                        "name": "DayNum",
+                        "dataType": "int64",
+                        "sourceColumn": "DayNum"
+                    },
+                    {
+                        "name": "Hour",
+                        "dataType": "int64",
+                        "sourceColumn": "Hour"
+                    },
+                    {
+                        "name": "Minutes",
+                        "dataType": "int64",
+                        "sourceColumn": "Minutes"
+                    },
+                    {
+                        "name": "Timestamp",
+                        "dataType": "dateTime",
+                        "sourceColumn": "Timestamp"
+                    }
+                ],
+                "partitions": [
+                    {
+                        "name": "Partition",
+                        "dataView": "full",
+                        "source": {
+                            "type": "m",
+                            "expression": [
+                                "let",
+                                "    Source = #\"times ref\"",
+                                "in",
+                                "    Source"
+                            ]
+                        }
+                    }
+                ]
+            }
+        );
+
+        there_and_back_test(input, Table::from_value);
     }
 }

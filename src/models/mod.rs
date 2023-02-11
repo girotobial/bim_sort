@@ -27,6 +27,10 @@ pub mod skip_if;
 pub mod table;
 mod traits;
 
+//test helper functions
+#[cfg(test)]
+mod test;
+
 pub use bim::Bim;
 pub use datasource::DataSource;
 pub use expression::{Expression, Expressive};

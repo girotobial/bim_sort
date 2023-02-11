@@ -26,6 +26,9 @@ pub struct DataSource {
 
     #[serde(rename = "connectionDetails")]
     pub connection_details: ConnectionDetails,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub options: Option<DataSourceOption>,
     pub credential: CredentialType,
 }
 
@@ -48,17 +51,20 @@ pub enum ConnectionDetails {
     DocumentDb { address: Address },
 
     #[serde(rename = "tds")]
-    Tds {
-        address: Address,
+    Tds(SqlConnection),
 
-        #[serde(skip_serializing_if = "Option::is_none")]
-        authentication: Option<String>,
-
-        #[serde(skip_serializing_if = "Option::is_none")]
-        query: Option<String>,
-    },
     #[serde(rename = "postgresql")]
-    PostgresSql { address: Address },
+    PostgresSql(SqlConnection),
+
+    #[serde(rename = "mysql")]
+    MySql(SqlConnection),
+}
+
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
+pub struct SqlConnection {
+    address: Address,
+    authentication: Option<String>,
+    query: Option<String>,
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
@@ -73,7 +79,7 @@ pub enum Address {
         #[serde(skip_serializing_if = "Option::is_none")]
         collection: Option<String>,
     },
-    Tds {
+    SqlDatabase {
         server: String,
         database: String,
     },
@@ -89,6 +95,17 @@ pub trait Credential {
 pub struct CredentialCommon {
     kind: String,
     path: String,
+
+    #[serde(skip_serializing_if = "Option::is_none", rename = "PrivacySetting")]
+    privacy_setting: Option<PrivacySetting>,
+}
+
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
+pub enum PrivacySetting {
+    None,
+    Public,
+    Organizational,
+    Private,
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
@@ -139,10 +156,19 @@ impl Credential for CredentialType {
     }
 }
 
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct DataSourceOption {
+    return_single_database: bool,
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
     use serde_json;
+    use serde_json::json;
+
+    use crate::models::test::{there_and_back_test, FromValue};
 
     #[test]
     fn test_correctly_deserialize_key_credential() {
@@ -193,10 +219,12 @@ mod test {
                         collection: Some("Default".to_string()),
                     },
                 },
+                options: None,
                 credential: CredentialType::Key {
                     common: CredentialCommon {
                         kind: "DocumentDb".to_string(),
                         path: "http://google.com".to_string(),
+                        privacy_setting: None,
                     },
                 },
             },
@@ -210,10 +238,12 @@ mod test {
                         collection: Some("Default".to_string()),
                     },
                 },
+                options: None,
                 credential: CredentialType::Key {
                     common: CredentialCommon {
                         kind: "DocumentDb".to_string(),
                         path: "http://google.com".to_string(),
+                        privacy_setting: None,
                     },
                 },
             },
@@ -230,10 +260,12 @@ mod test {
                         collection: Some("Default".to_string()),
                     },
                 },
+                options: None,
                 credential: CredentialType::Key {
                     common: CredentialCommon {
                         kind: "DocumentDb".to_string(),
                         path: "http://google.com".to_string(),
+                        privacy_setting: None,
                     },
                 },
             },
@@ -247,10 +279,12 @@ mod test {
                         collection: Some("Default".to_string()),
                     },
                 },
+                options: None,
                 credential: CredentialType::Key {
                     common: CredentialCommon {
                         kind: "DocumentDb".to_string(),
                         path: "http://google.com".to_string(),
+                        privacy_setting: None,
                     },
                 },
             },
@@ -259,5 +293,99 @@ mod test {
         datasources.sort();
         datasources.reverse();
         assert_eq!(expected, datasources);
+    }
+
+    #[test]
+    fn readwrite_postgressql_connection_details() {
+        let data = json!(
+            {
+                "protocol": "postgresql",
+                "address": {
+                    "server": "localhost:5432",
+                    "database": "flight_db"
+                },
+                "authentication": null,
+                "query": null
+            }
+        );
+
+        there_and_back_test(data, ConnectionDetails::from_value);
+    }
+
+    #[test]
+    fn readwrite_postgressql_datasource() {
+        let data = json!(
+            {
+                "type": "structured",
+                "name": "PostgreSQL/localhost:5432;flight_db",
+                "connectionDetails": {
+                    "protocol": "postgresql",
+                    "address": {
+                        "server": "localhost:5432",
+                        "database": "flight_db"
+                    },
+                    "authentication": null,
+                    "query": null
+                },
+                "credential": {
+                    "AuthenticationKind": "UsernamePassword",
+                    "kind": "PostgreSQL",
+                    "path": "localhost:5432;flight_db",
+                    "Username": "username",
+                    "EncryptConnection": false
+                }
+            }
+        );
+
+        there_and_back_test(data, DataSource::from_value);
+    }
+
+    #[test]
+    fn readwrite_mysql_connection_details() {
+        let data = json!(
+            {
+                "protocol": "mysql",
+                "address": {
+                    "server": "db.mysql.database.com",
+                    "database": "MySQLDB"
+                },
+                "authentication": null,
+                "query": null
+            }
+        );
+
+        there_and_back_test(data, ConnectionDetails::from_value);
+    }
+
+    #[test]
+    fn can_process_mysql_datasource() {
+        let data = json!(
+            {
+                "type": "structured",
+                "name": "DbName",
+                "connectionDetails": {
+                    "protocol": "mysql",
+                    "address": {
+                        "server": "db.mysql.database.com",
+                        "database": "MySQLDB"
+                    },
+                    "authentication": null,
+                    "query": null
+                },
+                "options": {
+                    "returnSingleDatabase": true
+                },
+                "credential": {
+                    "AuthenticationKind": "UsernamePassword",
+                    "kind": "MySql",
+                    "path": "db.mysql.database.com;MySQLDB",
+                    "Username": "email@emails.com",
+                    "EncryptConnection": true,
+                    "PrivacySetting": "Organizational"
+                }
+            }
+        );
+
+        there_and_back_test(data, DataSource::from_value);
     }
 }
