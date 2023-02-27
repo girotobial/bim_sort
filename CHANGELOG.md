@@ -5,6 +5,10 @@ All notable changes to bim_sort will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+### Added
+- Will not continue sorting a file with unknown fields.
+
 
 ## [0.2.0] - 2023-02-11
 ### Added
