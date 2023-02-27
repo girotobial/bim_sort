@@ -19,6 +19,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
+#[serde(deny_unknown_fields)]
 pub struct DataSource {
     #[serde(rename = "type")]
     pub type_: String,
@@ -45,7 +46,7 @@ impl Ord for DataSource {
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
-#[serde(tag = "protocol")]
+#[serde(tag = "protocol", deny_unknown_fields)]
 pub enum ConnectionDetails {
     #[serde(rename = "document-db")]
     DocumentDb { address: Address },
@@ -61,6 +62,7 @@ pub enum ConnectionDetails {
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
+#[serde(deny_unknown_fields)]
 pub struct SqlConnection {
     address: Address,
     authentication: Option<String>,
@@ -68,7 +70,7 @@ pub struct SqlConnection {
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
-#[serde(untagged)]
+#[serde(untagged, deny_unknown_fields)]
 pub enum Address {
     DocumentDb {
         url: String,
@@ -92,6 +94,7 @@ pub trait Credential {
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
+#[serde(deny_unknown_fields)]
 pub struct CredentialCommon {
     kind: String,
     path: String,
@@ -109,7 +112,7 @@ pub enum PrivacySetting {
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
-#[serde(tag = "AuthenticationKind")]
+#[serde(tag = "AuthenticationKind", deny_unknown_fields)]
 pub enum CredentialType {
     Key {
         #[serde(flatten)]
@@ -157,7 +160,7 @@ impl Credential for CredentialType {
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct DataSourceOption {
     return_single_database: bool,
 }
@@ -387,5 +390,19 @@ mod test {
         );
 
         there_and_back_test(data, DataSource::from_value);
+    }
+
+    #[test]
+    #[should_panic]
+    fn credentials_reject_unknown_fields() {
+        let input = json!(
+            {
+                "kind": "A Credential",
+                "path": "https://google.com",
+                "unknown_field": "Some data"
+            }
+        );
+
+        CredentialType::from_value(&input);
     }
 }

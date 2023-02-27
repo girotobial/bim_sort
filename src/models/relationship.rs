@@ -21,7 +21,7 @@ use serde::{Deserialize, Serialize};
 use super::skip_if::{is_true, true_};
 
 #[derive(Deserialize, Debug, Serialize, PartialEq, Eq)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct Relationship {
     pub name: String,
     pub from_table: String,

@@ -19,7 +19,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct Annotation {
     pub name: String,
     pub value: String,
@@ -34,5 +34,27 @@ impl Ord for Annotation {
 impl PartialOrd for Annotation {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
         Some(self.cmp(other))
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use crate::models::test::FromValue;
+    use serde_json::json;
+
+    use super::*;
+
+    #[test]
+    #[should_panic]
+    fn errors_if_field_is_unknown() {
+        let bad_input = json!(
+            {
+                "name": "A name",
+                "value": "A value",
+                "UNKNOWN": "Bad field"
+            }
+        );
+
+        Annotation::from_value(&bad_input);
     }
 }
