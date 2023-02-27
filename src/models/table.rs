@@ -28,7 +28,7 @@ use super::skip_if::{false_, is_false};
 use super::traits::RecursiveSort;
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct Table {
     pub name: String,
 
@@ -77,7 +77,7 @@ mod column {
     use serde::{Deserialize, Serialize};
 
     #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
-    #[serde(untagged, rename_all = "camelCase")]
+    #[serde(untagged, rename_all = "camelCase", deny_unknown_fields)]
     pub enum Column {
         Calculated(Calculated),
         Sourced(Sourced),
@@ -136,7 +136,7 @@ mod column {
     }
 
     #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
-    #[serde(rename_all = "camelCase")]
+    #[serde(rename_all = "camelCase", deny_unknown_fields)]
     struct CommonColumn {
         name: String,
         data_type: String,
@@ -164,7 +164,7 @@ mod column {
     }
 
     #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
-    #[serde(rename_all = "camelCase")]
+    #[serde(rename_all = "camelCase", deny_unknown_fields)]
     pub struct Calculated {
         #[serde(flatten)]
         common: CommonColumn,
@@ -178,6 +178,7 @@ mod column {
 
         #[serde(skip_serializing_if = "Option::is_none")]
         pub format_string: Option<String>,
+        pub display_folder: Option<String>,
     }
 
     impl Expressive for Calculated {
@@ -199,7 +200,7 @@ mod column {
     }
 
     #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
-    #[serde(rename_all = "camelCase")]
+    #[serde(rename_all = "camelCase", deny_unknown_fields)]
     pub struct Sourced {
         #[serde(flatten)]
         common: CommonColumn,
@@ -290,6 +291,7 @@ mod column {
                     expression: crate::models::Expression::String(expression.to_string()),
                     is_data_type_inferred: None,
                     format_string: None,
+                    display_folder: None,
                 })
             }
             fn new_sourced(
@@ -375,7 +377,7 @@ mod partition {
     use super::{Expression, Expressive};
 
     #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
-    #[serde(rename_all = "camelCase")]
+    #[serde(rename_all = "camelCase", deny_unknown_fields)]
     pub struct Partition {
         #[serde(skip_serializing_if = "Option::is_none")]
         pub mode: Option<String>,
@@ -400,7 +402,7 @@ mod partition {
     }
 
     #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
-    #[serde(rename_all = "camelCase")]
+    #[serde(rename_all = "camelCase", deny_unknown_fields)]
     pub struct Source {
         #[serde(rename = "type")]
         pub type_: String,
@@ -459,7 +461,7 @@ mod measure {
     use super::{Expression, Expressive};
 
     #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
-    #[serde(rename_all = "camelCase")]
+    #[serde(rename_all = "camelCase", deny_unknown_fields)]
     pub struct Measure {
         pub name: String,
         expression: Expression,
@@ -531,7 +533,7 @@ mod measure {
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub(crate) struct CalculationItem {
     name: String,
 
@@ -576,7 +578,7 @@ impl Ord for CalculationItem {
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub(crate) struct CalculationGroup {
     calculation_items: Vec<CalculationItem>,
 }

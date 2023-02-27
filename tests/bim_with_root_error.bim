@@ -1,0 +1,691 @@
+{
+  "name": "SemanticModel",
+  "UNKNOWN_FIELD": "I AM UNKNOWN",
+  "compatibilityLevel": 1500,
+  "model": {
+    "culture": "en-GB",
+    "discourageImplicitMeasures": true,
+    "dataSources": [
+      {
+        "type": "structured",
+        "name": "PostgreSQL/localhost:5432;flight_db",
+        "connectionDetails": {
+          "protocol": "postgresql",
+          "address": {
+            "server": "localhost:5432",
+            "database": "flight_db"
+          },
+          "authentication": null,
+          "query": null
+        },
+        "credential": {
+          "AuthenticationKind": "UsernamePassword",
+          "kind": "PostgreSQL",
+          "path": "localhost:5432;flight_db",
+          "Username": "alex",
+          "EncryptConnection": false
+        }
+      }
+    ],
+    "tables": [
+      {
+        "name": "aircraft",
+        "columns": [
+          {
+            "name": "id",
+            "dataType": "int64",
+            "isHidden": true,
+            "sourceColumn": "id",
+            "formatString": "0"
+          },
+          {
+            "name": "registration",
+            "dataType": "string",
+            "sourceColumn": "registration"
+          },
+          {
+            "name": "icao_code",
+            "dataType": "string",
+            "sourceColumn": "icao_code"
+          },
+          {
+            "name": "type",
+            "dataType": "string",
+            "sourceColumn": "type"
+          },
+          {
+            "name": "family",
+            "dataType": "string",
+            "sourceColumn": "family"
+          },
+          {
+            "name": "propulsion",
+            "dataType": "string",
+            "sourceColumn": "propulsion"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "Partition",
+            "dataView": "full",
+            "source": {
+              "type": "m",
+              "expression": [
+                "let",
+                "    Source = aircraft_ref",
+                "in",
+                "    Source"
+              ]
+            }
+          }
+        ],
+        "measures": [
+          {
+            "name": "Unique Aircraft",
+            "expression": " DISTINCTCOUNTNOBLANK(aircraft[registration])"
+          }
+        ]
+      },
+      {
+        "name": "origin",
+        "columns": [
+          {
+            "name": "id",
+            "dataType": "int64",
+            "isHidden": true,
+            "sourceColumn": "id"
+          },
+          {
+            "name": "icao_code",
+            "dataType": "string",
+            "sourceColumn": "icao_code"
+          },
+          {
+            "name": "summer_timezone",
+            "dataType": "string",
+            "sourceColumn": "summer_timezone"
+          },
+          {
+            "name": "winter_timezone",
+            "dataType": "string",
+            "sourceColumn": "winter_timezone"
+          },
+          {
+            "name": "city",
+            "dataType": "string",
+            "sourceColumn": "city"
+          },
+          {
+            "name": "state",
+            "dataType": "string",
+            "sourceColumn": "state"
+          },
+          {
+            "name": "country",
+            "dataType": "string",
+            "sourceColumn": "country"
+          },
+          {
+            "name": "name",
+            "dataType": "string",
+            "sourceColumn": "name"
+          },
+          {
+            "name": "latitude",
+            "dataType": "double",
+            "sourceColumn": "latitude"
+          },
+          {
+            "name": "longitude",
+            "dataType": "double",
+            "sourceColumn": "longitude"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "Partition",
+            "dataView": "full",
+            "source": {
+              "type": "m",
+              "expression": [
+                "let",
+                "    Source = airport_ref",
+                "in",
+                "    Source"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "name": "destination",
+        "columns": [
+          {
+            "name": "id",
+            "dataType": "int64",
+            "isHidden": true,
+            "sourceColumn": "id"
+          },
+          {
+            "name": "icao_code",
+            "dataType": "string",
+            "sourceColumn": "icao_code"
+          },
+          {
+            "name": "summer_timezone",
+            "dataType": "string",
+            "sourceColumn": "summer_timezone"
+          },
+          {
+            "name": "winter_timezone",
+            "dataType": "string",
+            "sourceColumn": "winter_timezone"
+          },
+          {
+            "name": "city",
+            "dataType": "string",
+            "sourceColumn": "city"
+          },
+          {
+            "name": "state",
+            "dataType": "string",
+            "sourceColumn": "state"
+          },
+          {
+            "name": "country",
+            "dataType": "string",
+            "sourceColumn": "country"
+          },
+          {
+            "name": "name",
+            "dataType": "string",
+            "sourceColumn": "name"
+          },
+          {
+            "name": "latitude",
+            "dataType": "double",
+            "sourceColumn": "latitude"
+          },
+          {
+            "name": "longitude",
+            "dataType": "double",
+            "sourceColumn": "longitude"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "Partition",
+            "dataView": "full",
+            "source": {
+              "type": "m",
+              "expression": [
+                "let",
+                "    Source = airport_ref",
+                "in",
+                "    Source"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "name": "leg",
+        "columns": [
+          {
+            "name": "id",
+            "dataType": "int64",
+            "sourceColumn": "id"
+          },
+          {
+            "name": "departure_time",
+            "dataType": "int64",
+            "isHidden": true,
+            "sourceColumn": "departure_time"
+          },
+          {
+            "name": "arrival_time",
+            "dataType": "int64",
+            "isHidden": true,
+            "sourceColumn": "arrival_time"
+          },
+          {
+            "name": "duration",
+            "dataType": "double",
+            "sourceColumn": "duration"
+          },
+          {
+            "name": "origin_id",
+            "dataType": "int64",
+            "isHidden": true,
+            "sourceColumn": "origin_id"
+          },
+          {
+            "name": "destination_id",
+            "dataType": "int64",
+            "isHidden": true,
+            "sourceColumn": "destination_id"
+          },
+          {
+            "name": "aircraft_id",
+            "dataType": "int64",
+            "isHidden": true,
+            "sourceColumn": "aircraft_id"
+          },
+          {
+            "name": "FlightCompositeKey",
+            "dataType": "string",
+            "isHidden": true,
+            "sourceColumn": "FlightCompositeKey"
+          },
+          {
+            "type": "calculated",
+            "name": "duration*60",
+            "dataType": "double",
+            "isDataTypeInferred": true,
+            "expression": "leg[duration] * 60"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "Partition",
+            "dataView": "full",
+            "source": {
+              "type": "m",
+              "expression": [
+                "let",
+                "    Source = #\"leg ref\"",
+                "in",
+                "    Source"
+              ]
+            }
+          }
+        ],
+        "measures": [
+          {
+            "name": "Legs",
+            "expression": " COUNTROWS(leg)"
+          },
+          {
+            "name": "Flights",
+            "expression": " DISTINCTCOUNTNOBLANK(leg[FlightCompositeKey])"
+          },
+          {
+            "name": "Aircraft",
+            "expression": " DISTINCTCOUNTNOBLANK(leg[aircraft_id])"
+          },
+          {
+            "name": "Total Duration",
+            "expression": " SUM(leg[duration]) * 24",
+            "formatString": "0.00"
+          },
+          {
+            "name": "Average Duration",
+            "expression": " AVERAGE(leg[duration])"
+          }
+        ]
+      },
+      {
+        "name": "flight_details",
+        "columns": [
+          {
+            "name": "number",
+            "dataType": "int64",
+            "sourceColumn": "number"
+          },
+          {
+            "name": "summer",
+            "dataType": "int64",
+            "sourceColumn": "summer"
+          },
+          {
+            "name": "year",
+            "dataType": "int64",
+            "sourceColumn": "year"
+          },
+          {
+            "name": "airline",
+            "dataType": "string",
+            "sourceColumn": "airline"
+          },
+          {
+            "name": "airline_icao_code",
+            "dataType": "string",
+            "sourceColumn": "airline_icao_code"
+          },
+          {
+            "name": "CompositeKey",
+            "dataType": "string",
+            "sourceColumn": "CompositeKey"
+          },
+          {
+            "type": "calculated",
+            "name": "decade",
+            "dataType": "int64",
+            "isDataTypeInferred": true,
+            "expression": "FLOOR(flight_details[year], 10)"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "Partition",
+            "dataView": "full",
+            "source": {
+              "type": "m",
+              "expression": [
+                "let",
+                "    Source = flight_details_ref,",
+                "    #\"Removed Other Columns\" = Table.SelectColumns(Source,{\"number\", \"summer\", \"year\", \"airline_icao_code\", \"airline\", \"CompositeKey\"})",
+                "in",
+                "    #\"Removed Other Columns\""
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "name": "departure_time",
+        "columns": [
+          {
+            "name": "time",
+            "dataType": "int64",
+            "isHidden": true,
+            "sourceColumn": "time"
+          },
+          {
+            "name": "MinutesInDay",
+            "dataType": "int64",
+            "isHidden": true,
+            "sourceColumn": "MinutesInDay"
+          },
+          {
+            "name": "DayNum",
+            "dataType": "int64",
+            "sourceColumn": "DayNum"
+          },
+          {
+            "name": "Hour",
+            "dataType": "int64",
+            "sourceColumn": "Hour"
+          },
+          {
+            "name": "Minutes",
+            "dataType": "int64",
+            "sourceColumn": "Minutes"
+          },
+          {
+            "name": "Timestamp",
+            "dataType": "dateTime",
+            "sourceColumn": "Timestamp",
+            "formatString": "HH:mm",
+            "annotations": [
+              {
+                "name": "Format",
+                "value": "<Format Format=\"DateTimeCustom\"><DateTimes><DateTime LCID=\"2057\" Group=\"ShortTime\" FormatString=\"HH:mm\" /></DateTimes></Format>"
+              }
+            ]
+          },
+          {
+            "type": "calculated",
+            "name": "Day",
+            "dataType": "string",
+            "isDataTypeInferred": true,
+            "expression": "SWITCH(departure_time[DayNum], 0, \"Monday\", 1, \"Tuesday\", 2, \"Wednesday\", 3, \"Thursday\", 4, \"Friday\", 5, \"Saturday\", 6, \"Sunday\", \"WTF\")"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "Partition",
+            "dataView": "full",
+            "source": {
+              "type": "m",
+              "expression": [
+                "let",
+                "    Source = #\"times ref\"",
+                "in",
+                "    Source"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "name": "arrival_time",
+        "columns": [
+          {
+            "name": "time",
+            "dataType": "int64",
+            "isHidden": true,
+            "sourceColumn": "time"
+          },
+          {
+            "name": "MinutesInDay",
+            "dataType": "int64",
+            "isHidden": true,
+            "sourceColumn": "MinutesInDay"
+          },
+          {
+            "name": "DayNum",
+            "dataType": "int64",
+            "sourceColumn": "DayNum"
+          },
+          {
+            "name": "Hour",
+            "dataType": "int64",
+            "sourceColumn": "Hour"
+          },
+          {
+            "name": "Minutes",
+            "dataType": "int64",
+            "sourceColumn": "Minutes"
+          },
+          {
+            "name": "Timestamp",
+            "dataType": "dateTime",
+            "sourceColumn": "Timestamp"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "Partition",
+            "dataView": "full",
+            "source": {
+              "type": "m",
+              "expression": [
+                "let",
+                "    Source = #\"times ref\"",
+                "in",
+                "    Source"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "name": "CalculationGroup 1",
+        "calculationGroup": {
+          "calculationItems": [
+            {
+              "name": "CalculationItem 1"
+            }
+          ]
+        },
+        "columns": [
+          {
+            "name": "CalculationItemColumn 1",
+            "dataType": "string",
+            "sourceColumn": "Name"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "CalculationGroup 1",
+            "mode": "import",
+            "source": {
+              "type": "calculationGroup"
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "name": "abf21a79-cb10-4295-ac12-ce17b729458f",
+        "fromTable": "leg",
+        "fromColumn": "aircraft_id",
+        "toTable": "aircraft",
+        "toColumn": "id"
+      },
+      {
+        "name": "d1135cca-51c9-4653-897e-ec481409af94",
+        "fromTable": "leg",
+        "fromColumn": "departure_time",
+        "toTable": "departure_time",
+        "toColumn": "time"
+      },
+      {
+        "name": "592ff1e9-0f6e-4ae9-8851-7c9d58276d49",
+        "fromTable": "leg",
+        "fromColumn": "arrival_time",
+        "toTable": "arrival_time",
+        "toColumn": "time"
+      },
+      {
+        "name": "d8e805c0-dc4f-4a6a-8cb6-40e42045ff10",
+        "fromTable": "leg",
+        "fromColumn": "origin_id",
+        "toTable": "origin",
+        "toColumn": "id"
+      },
+      {
+        "name": "8ca1488d-3b98-4381-89da-091b227af582",
+        "fromTable": "leg",
+        "fromColumn": "destination_id",
+        "toTable": "destination",
+        "toColumn": "id"
+      },
+      {
+        "name": "4968ed0f-5436-4aa3-a5df-b7f65478cd3a",
+        "fromTable": "leg",
+        "fromColumn": "FlightCompositeKey",
+        "toTable": "flight_details",
+        "toColumn": "CompositeKey"
+      }
+    ],
+    "expressions": [
+      {
+        "name": "aircraft_ref",
+        "kind": "m",
+        "expression": [
+          "let",
+          "    Source = #\"PostgreSQL/localhost:5432;flight_db\",",
+          "    public_aircraft = Source{[Schema=\"public\",Item=\"aircraft\"]}[Data],",
+          "    #\"Expanded public.type\" = Table.ExpandRecordColumn(public_aircraft, \"public.type\", {\"id\", \"icao_code\", \"name\", \"propulsion_id\", \"family_id\", \"public.family\", \"public.propulsion\"}, {\"id.1\", \"icao_code\", \"name\", \"propulsion_id\", \"family_id\", \"public.family\", \"public.propulsion\"}),",
+          "    #\"Expanded public.family\" = Table.ExpandRecordColumn(#\"Expanded public.type\", \"public.family\", {\"name\"}, {\"name.1\"}),",
+          "    #\"Renamed Columns\" = Table.RenameColumns(#\"Expanded public.family\",{{\"name.1\", \"family\"}}),",
+          "    #\"Expanded public.propulsion\" = Table.ExpandRecordColumn(#\"Renamed Columns\", \"public.propulsion\", {\"name\"}, {\"name.1\"}),",
+          "    #\"Renamed Columns1\" = Table.RenameColumns(#\"Expanded public.propulsion\",{{\"name.1\", \"propulsion\"}}),",
+          "    #\"Removed Other Columns\" = Table.SelectColumns(#\"Renamed Columns1\",{\"id\", \"registration\", \"icao_code\", \"name\", \"family\", \"propulsion\"}),",
+          "    #\"Renamed Columns2\" = Table.RenameColumns(#\"Removed Other Columns\",{{\"name\", \"type\"}})",
+          "in",
+          "    #\"Renamed Columns2\""
+        ]
+      },
+      {
+        "name": "airport_ref",
+        "kind": "m",
+        "expression": [
+          "let",
+          "    Source = #\"PostgreSQL/localhost:5432;flight_db\",",
+          "    public_airport = Source{[Schema=\"public\",Item=\"airport\"]}[Data],",
+          "    #\"Removed Other Columns\" = Table.SelectColumns(public_airport,{\"id\", \"icao_code\", \"summer_timezone\", \"winter_timezone\", \"city\", \"state\", \"country\", \"name\", \"latitude\", \"longitude\"})",
+          "in",
+          "    #\"Removed Other Columns\""
+        ]
+      },
+      {
+        "name": "leg ref",
+        "kind": "m",
+        "expression": [
+          "let",
+          "    Source = #\"PostgreSQL/localhost:5432;flight_db\",",
+          "    public_leg = Source{[Schema=\"public\",Item=\"leg\"]}[Data],",
+          "    #\"Expanded public.flight\" = Table.ExpandRecordColumn(public_leg, \"public.flight\", {\"number\", \"summer\", \"year\", \"public.airline\"}, {\"number\", \"summer\", \"year\", \"public.airline\"}),",
+          "    #\"Expanded public.airline\" = Table.ExpandRecordColumn(#\"Expanded public.flight\", \"public.airline\", {\"icao_code\"}, {\"icao_code\"}),",
+          "    #\"Added Custom\" = Table.AddColumn(#\"Expanded public.airline\", \"FlightCompositeKey\", each Number.ToText([number])&\"|\"&Number.ToText([summer])&\"|\"&Number.ToText([year])&\"|\"&[icao_code]),",
+          "    #\"Added Custom1\" = Table.AddColumn(#\"Added Custom\", \"Duration_\", each Duration.From([duration]/ ( 60 * 24))),",
+          "    #\"Changed Type1\" = Table.TransformColumnTypes(#\"Added Custom1\",{{\"Duration_\", type duration}}),",
+          "    #\"Renamed Columns\" = Table.RenameColumns(#\"Changed Type1\",{{\"duration\", \"duration__\"}, {\"Duration_\", \"duration\"}}),",
+          "    #\"Changed Type\" = Table.TransformColumnTypes(#\"Renamed Columns\",{{\"FlightCompositeKey\", type text}}),",
+          "    #\"Removed Other Columns\" = Table.SelectColumns(#\"Changed Type\",{\"id\", \"departure_time\", \"arrival_time\", \"origin_id\", \"destination_id\", \"aircraft_id\", \"FlightCompositeKey\", \"duration\"})",
+          "in",
+          "    #\"Removed Other Columns\""
+        ]
+      },
+      {
+        "name": "flight_details_ref",
+        "kind": "m",
+        "expression": [
+          "let",
+          "    Source = #\"PostgreSQL/localhost:5432;flight_db\",",
+          "    public_flight = Source{[Schema=\"public\",Item=\"flight\"]}[Data],",
+          "    #\"Expanded public.airline\" = Table.ExpandRecordColumn(public_flight, \"public.airline\", {\"icao_code\", \"name\"}, {\"icao_code\", \"name\"}),",
+          "    #\"Renamed Columns\" = Table.RenameColumns(#\"Expanded public.airline\",{{\"name\", \"airline\"}, {\"icao_code\", \"airline_icao_code\"}}),",
+          "    #\"Renamed Columns1\" = Table.RenameColumns(#\"Renamed Columns\",{{\"id\", \"AK\"}}),",
+          "    #\"Removed Duplicates\" = Table.Distinct(#\"Renamed Columns1\", {\"number\", \"summer\", \"year\", \"airline_icao_code\"}),",
+          "    #\"Added Custom\" = Table.AddColumn(#\"Removed Duplicates\", \"CompositeKey\", each Number.ToText([number])&\"|\"&Number.ToText([summer])&\"|\"&Number.ToText([year])&\"|\"&[airline_icao_code]),",
+          "    #\"Changed Type\" = Table.TransformColumnTypes(#\"Added Custom\",{{\"CompositeKey\", type text}})",
+          "in",
+          "    #\"Changed Type\""
+        ]
+      },
+      {
+        "name": "departure_times",
+        "kind": "m",
+        "expression": [
+          "let",
+          "    Source = #\"leg ref\",",
+          "    #\"Removed Other Columns\" = Table.SelectColumns(Source,{\"departure_time\"}),",
+          "    #\"Renamed Columns\" = Table.RenameColumns(#\"Removed Other Columns\",{{\"departure_time\", \"time\"}})",
+          "in",
+          "    #\"Renamed Columns\""
+        ]
+      },
+      {
+        "name": "arrival_times",
+        "kind": "m",
+        "expression": [
+          "let",
+          "    Source = #\"leg ref\",",
+          "    #\"Removed Other Columns\" = Table.SelectColumns(Source,{\"arrival_time\"}),",
+          "    #\"Renamed Columns\" = Table.RenameColumns(#\"Removed Other Columns\",{{\"arrival_time\", \"time\"}})",
+          "in",
+          "    #\"Renamed Columns\""
+        ]
+      },
+      {
+        "name": "times ref",
+        "kind": "m",
+        "expression": [
+          "let",
+          "    Source = Table.Combine({arrival_times, departure_times}),",
+          "    #\"Removed Duplicates\" = Table.Distinct(Source),",
+          "    #\"Added Custom\" = Table.AddColumn(#\"Removed Duplicates\", \"MinutesInDay\", each Number.Mod([time], 60 * 24)),",
+          "    #\"Added Custom1\" = Table.AddColumn(#\"Added Custom\", \"DayNum\", each Number.IntegerDivide([time], 60 * 24)),",
+          "    #\"Added Custom2\" = Table.AddColumn(#\"Added Custom1\", \"Hour\", each Number.IntegerDivide([MinutesInDay], 60)),",
+          "    #\"Added Custom3\" = Table.AddColumn(#\"Added Custom2\", \"Minutes\", each [MinutesInDay] - [Hour] * 60),",
+          "    #\"Added Custom4\" = Table.AddColumn(#\"Added Custom3\", \"Timestamp\", each #time([Hour],[Minutes],0)),",
+          "    #\"Changed Type\" = Table.TransformColumnTypes(#\"Added Custom4\",{{\"MinutesInDay\", Int64.Type}, {\"DayNum\", Int64.Type}, {\"Hour\", Int64.Type}, {\"Minutes\", Int64.Type}, {\"Timestamp\", type time}})",
+          "in",
+          "    #\"Changed Type\""
+        ]
+      }
+    ],
+    "annotations": [
+      {
+        "name": "ClientCompatibilityLevel",
+        "value": "600"
+      }
+    ]
+  },
+  "id": "SemanticModel"
+}

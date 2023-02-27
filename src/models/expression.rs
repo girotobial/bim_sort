@@ -19,7 +19,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug, Eq)]
-#[serde(untagged)]
+#[serde(untagged, deny_unknown_fields)]
 pub enum Expression {
     Vec(Vec<String>),
     String(String),
@@ -47,6 +47,7 @@ pub trait Expressive {
 
 #[allow(clippy::module_name_repetitions)]
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
+#[serde(deny_unknown_fields)]
 pub struct ModelExpression {
     pub name: String,
 

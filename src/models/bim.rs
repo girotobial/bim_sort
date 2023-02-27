@@ -28,7 +28,7 @@ use super::Model;
 
 /// The root bim file.
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct Bim {
     pub name: String,
     pub compatibility_level: u32,
