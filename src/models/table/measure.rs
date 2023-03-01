@@ -26,6 +26,8 @@ use crate::models::RecursiveSort;
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct Measure {
     pub name: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    description: Option<String>,
     expression: Expression,
 
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -76,6 +78,7 @@ mod test {
             let expression = Expression::String(expression.to_string());
             Self {
                 name: name.to_string(),
+                description: None,
                 expression,
                 format_string: None,
                 display_folder: None,
