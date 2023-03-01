@@ -16,10 +16,14 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-use crate::models::expression::{Expression, Expressive};
+use crate::models::{
+    annotations::Annotation,
+    expression::{Expression, Expressive},
+    RecursiveSort,
+};
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct Partition {
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -30,6 +34,9 @@ pub struct Partition {
     pub data_view: Option<String>,
 
     pub source: Source,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    annotations: Option<Vec<Annotation>>,
 }
 
 impl Ord for Partition {
@@ -44,7 +51,15 @@ impl PartialOrd for Partition {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
+impl RecursiveSort for Partition {
+    fn recursive_sort(&mut self) {
+        if let Some(a) = &mut self.annotations {
+            a.sort();
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct Source {
     #[serde(rename = "type")]
@@ -65,6 +80,7 @@ mod test {
     use crate::models::{
         annotations::Annotation,
         test::{there_and_back_test, FromValue},
+        traits::RecursiveSort,
     };
 
     use super::{Expression, Partition, Source};
@@ -76,6 +92,7 @@ mod test {
                 name: name.to_string(),
                 data_view: Some(dataview.to_string()),
                 source,
+                annotations: None,
             }
         }
     }
@@ -114,9 +131,7 @@ mod test {
                 "annotations": [
                     {
                         "name": "",
-                        "value": [
-                            ""
-                        ]
+                        "value": ""
                     }
                 ]
             }
@@ -152,6 +167,6 @@ mod test {
 
         partition.recursive_sort();
 
-        assert_eq!(partition.annotations, annotations_sorted);
+        assert_eq!(partition.annotations, Some(annotations_sorted));
     }
 }
