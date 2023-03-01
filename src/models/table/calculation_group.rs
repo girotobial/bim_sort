@@ -76,6 +76,8 @@ struct FormatStringDefinition {
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub(crate) struct CalculationGroup {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    precendence: Option<isize>,
     calculation_items: Vec<CalculationItem>,
 }
 
@@ -87,7 +89,9 @@ impl RecursiveSort for CalculationGroup {
 
 #[cfg(test)]
 mod test {
-    use super::CalculationItem;
+    use serde_json::json;
+
+    use super::{CalculationGroup, CalculationItem};
 
     use crate::models::test::{there_and_back_test, FromValue};
 
@@ -103,5 +107,17 @@ mod test {
         );
 
         there_and_back_test(&data, CalculationItem::from_value);
+    }
+
+    #[test]
+    fn has_precedence_field() {
+        let cg = json!(
+            {
+                "precendence": 1,
+                "calculationItems": []
+            }
+        );
+
+        there_and_back_test(&cg, CalculationGroup::from_value);
     }
 }
