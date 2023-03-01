@@ -39,7 +39,7 @@ impl PartialOrd for Annotation {
 
 #[cfg(test)]
 mod test {
-    use crate::models::test::FromValue;
+    use crate::models::test::{there_and_back_test, FromValue};
     use serde_json::json;
 
     use super::*;
@@ -56,5 +56,30 @@ mod test {
         );
 
         Annotation::from_value(&bad_input);
+    }
+
+    #[test]
+    fn values_can_be_arrays_or_strings() {
+        let input_one = json!(
+            {
+                "name": "A new name",
+                "value": [
+                    "",
+                    "An array value",
+                    ""
+                ]
+            }
+        );
+
+        there_and_back_test(&input_one, Annotation::from_value);
+
+        let input_two = json!(
+            {
+                "name": "Another name",
+                "value": "A string value"
+            }
+        );
+
+        there_and_back_test(&input_two, Annotation::from_value);
     }
 }
