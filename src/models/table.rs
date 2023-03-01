@@ -509,6 +509,7 @@ mod measure {
     mod test {
         use super::Expression;
         use super::Measure;
+        use super::RecursiveSort;
         use crate::models::test::{there_and_back_test, FromValue};
 
         impl Measure {
@@ -542,9 +543,10 @@ mod measure {
                 Measure::new("Total Count", "COUNTROWS(Table)"),
             ];
 
-            measures.sort();
+            measures.recursive_sort();
             assert_eq!(measures, expected);
         }
+
         #[test]
         fn test_measures_allow_annotations() {
             let input = serde_json::json!(
