@@ -49,7 +49,7 @@ impl RecursiveSort for Table {
         self.partitions.sort();
         self.columns.sort();
         if let Some(v) = &mut self.measures {
-            v.sort();
+            v.recursive_sort();
         }
 
         if let Some(c) = &mut self.calculation_group {
@@ -457,6 +457,9 @@ mod partition {
 }
 
 mod measure {
+    use crate::models::annotations::Annotation;
+    use crate::models::RecursiveSort;
+
     use super::{Deserialize, Serialize};
     use super::{Expression, Expressive};
 
@@ -471,6 +474,9 @@ mod measure {
 
         #[serde(skip_serializing_if = "Option::is_none")]
         pub display_folder: Option<String>,
+
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub annotations: Option<Vec<Annotation>>,
     }
 
     impl Ord for Measure {
@@ -491,6 +497,14 @@ mod measure {
         }
     }
 
+    impl RecursiveSort for Measure {
+        fn recursive_sort(&mut self) {
+            if let Some(a) = &mut self.annotations {
+                a.sort()
+            }
+        }
+    }
+
     #[cfg(test)]
     mod test {
         use super::Expression;
@@ -505,6 +519,7 @@ mod measure {
                     expression,
                     format_string: None,
                     display_folder: None,
+                    annotations: None,
                 }
             }
         }
