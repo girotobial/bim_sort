@@ -312,7 +312,7 @@ mod test {
             }
         );
 
-        there_and_back_test(data, ConnectionDetails::from_value);
+        there_and_back_test(&data, ConnectionDetails::from_value);
     }
 
     #[test]
@@ -340,7 +340,7 @@ mod test {
             }
         );
 
-        there_and_back_test(data, DataSource::from_value);
+        there_and_back_test(&data, DataSource::from_value);
     }
 
     #[test]
@@ -357,7 +357,7 @@ mod test {
             }
         );
 
-        there_and_back_test(data, ConnectionDetails::from_value);
+        there_and_back_test(&data, ConnectionDetails::from_value);
     }
 
     #[test]
@@ -389,7 +389,7 @@ mod test {
             }
         );
 
-        there_and_back_test(data, DataSource::from_value);
+        there_and_back_test(&data, DataSource::from_value);
     }
 
     #[test]

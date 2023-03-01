@@ -235,7 +235,9 @@ mod column {
     mod tests {
         use super::Column;
         use super::Expressive;
+        use crate::models::test::{there_and_back_test, FromValue};
         use serde_json;
+        use serde_json::json;
 
         #[test]
         fn test_column_with_vec_expression() {
@@ -292,6 +294,7 @@ mod column {
                     is_data_type_inferred: None,
                     format_string: None,
                     display_folder: None,
+                    annotations: None,
                 })
             }
             fn new_sourced(
@@ -368,6 +371,26 @@ mod column {
             let output = serde_json::to_string(&column).unwrap();
 
             assert!(output.contains(r#""sortByColumn":"Ordinal""#))
+        }
+
+        #[test]
+        fn test_columns_allow_annotations() {
+            let input = json!(
+                {
+                    "name": "Date From",
+                    "expression": " MIN('Calendar'[Date])",
+                    "formatString": "dd/MM/yyyy",
+                    "displayFolder": "Filters",
+                    "annotations": [
+                        {
+                            "name": "Format",
+                            "value": "<Format Format=\"DateTimeCustom\"><DateTimes><DateTime LCID=\"2057\" Group=\"ShortDate\" FormatString=\"dd/MM/yyyy\" /></DateTimes></Format>"
+                        }
+                    ]
+                }
+            );
+
+            there_and_back_test(&input, Column::from_value)
         }
     }
 }
@@ -610,7 +633,7 @@ mod tests {
             }
         );
 
-        there_and_back_test(input, CalculationItem::from_value);
+        there_and_back_test(&input, CalculationItem::from_value);
     }
 
     #[test]
@@ -640,7 +663,7 @@ mod tests {
             }
         );
 
-        there_and_back_test(input, CalculationItem::from_value);
+        there_and_back_test(&input, CalculationItem::from_value);
     }
 
     #[test]
@@ -657,7 +680,7 @@ mod tests {
             }
         );
 
-        there_and_back_test(input, CalculationItem::from_value);
+        there_and_back_test(&input, CalculationItem::from_value);
     }
 
     #[test]
@@ -668,7 +691,7 @@ mod tests {
             }
         );
 
-        there_and_back_test(input, CalculationItem::from_value);
+        there_and_back_test(&input, CalculationItem::from_value);
     }
 
     #[test]
@@ -690,7 +713,7 @@ mod tests {
             }
         );
 
-        there_and_back_test(input, CalculationGroup::from_value)
+        there_and_back_test(&input, CalculationGroup::from_value)
     }
 
     #[test]
@@ -700,7 +723,7 @@ mod tests {
                 "calculationItems": []
             }
         );
-        there_and_back_test(input, CalculationGroup::from_value);
+        there_and_back_test(&input, CalculationGroup::from_value);
     }
 
     fn test_sort<T: Ord + std::fmt::Debug, F>(inputs: [serde_json::Value; 2], f: F)
@@ -819,7 +842,7 @@ mod tests {
             }
         );
 
-        there_and_back_test(input, Table::from_value);
+        there_and_back_test(&input, Table::from_value);
     }
 
     #[test]
@@ -879,6 +902,6 @@ mod tests {
             }
         );
 
-        there_and_back_test(input, Table::from_value);
+        there_and_back_test(&input, Table::from_value);
     }
 }
