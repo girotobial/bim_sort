@@ -20,11 +20,11 @@ impl<T: serde::Serialize> ToValue for T {
     }
 }
 
-pub(crate) fn there_and_back_test<T: ToValue, F>(input: serde_json::Value, f: F)
+pub(crate) fn there_and_back_test<T: ToValue, F>(input: &serde_json::Value, f: F)
 where
     F: Fn(&serde_json::Value) -> T,
 {
-    let item = f(&input);
+    let item = f(input);
     let output = item.to_value();
-    assert_eq!(input, output);
+    assert_eq!(input, &output);
 }

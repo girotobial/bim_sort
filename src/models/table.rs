@@ -49,7 +49,7 @@ impl RecursiveSort for Table {
         self.partitions.sort();
         self.columns.sort();
         if let Some(v) = &mut self.measures {
-            v.sort();
+            v.recursive_sort();
         }
 
         if let Some(c) = &mut self.calculation_group {
@@ -457,6 +457,9 @@ mod partition {
 }
 
 mod measure {
+    use crate::models::annotations::Annotation;
+    use crate::models::RecursiveSort;
+
     use super::{Deserialize, Serialize};
     use super::{Expression, Expressive};
 
@@ -471,6 +474,9 @@ mod measure {
 
         #[serde(skip_serializing_if = "Option::is_none")]
         pub display_folder: Option<String>,
+
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub annotations: Option<Vec<Annotation>>,
     }
 
     impl Ord for Measure {
@@ -491,10 +497,20 @@ mod measure {
         }
     }
 
+    impl RecursiveSort for Measure {
+        fn recursive_sort(&mut self) {
+            if let Some(a) = &mut self.annotations {
+                a.sort()
+            }
+        }
+    }
+
     #[cfg(test)]
     mod test {
         use super::Expression;
         use super::Measure;
+        use super::RecursiveSort;
+        use crate::models::test::{there_and_back_test, FromValue};
 
         impl Measure {
             fn new(name: &str, expression: &str) -> Self {
@@ -504,6 +520,7 @@ mod measure {
                     expression,
                     format_string: None,
                     display_folder: None,
+                    annotations: None,
                 }
             }
         }
@@ -526,8 +543,28 @@ mod measure {
                 Measure::new("Total Count", "COUNTROWS(Table)"),
             ];
 
-            measures.sort();
+            measures.recursive_sort();
             assert_eq!(measures, expected);
+        }
+
+        #[test]
+        fn test_measures_allow_annotations() {
+            let input = serde_json::json!(
+                {
+                    "name": "Date From",
+                    "expression": " MIN('Calendar'[Date])",
+                    "formatString": "dd/MM/yyyy",
+                    "displayFolder": "Filters",
+                    "annotations": [
+                        {
+                            "name": "Format",
+                            "value": "<Format Format=\"DateTimeCustom\"><DateTimes><DateTime LCID=\"2057\" Group=\"ShortDate\" FormatString=\"dd/MM/yyyy\" /></DateTimes></Format>"
+                        }
+                    ]
+                }
+            );
+
+            there_and_back_test(&input, Measure::from_value)
         }
     }
 }
@@ -610,7 +647,7 @@ mod tests {
             }
         );
 
-        there_and_back_test(input, CalculationItem::from_value);
+        there_and_back_test(&input, CalculationItem::from_value);
     }
 
     #[test]
@@ -640,7 +677,7 @@ mod tests {
             }
         );
 
-        there_and_back_test(input, CalculationItem::from_value);
+        there_and_back_test(&input, CalculationItem::from_value);
     }
 
     #[test]
@@ -657,7 +694,7 @@ mod tests {
             }
         );
 
-        there_and_back_test(input, CalculationItem::from_value);
+        there_and_back_test(&input, CalculationItem::from_value);
     }
 
     #[test]
@@ -668,7 +705,7 @@ mod tests {
             }
         );
 
-        there_and_back_test(input, CalculationItem::from_value);
+        there_and_back_test(&input, CalculationItem::from_value);
     }
 
     #[test]
@@ -690,7 +727,7 @@ mod tests {
             }
         );
 
-        there_and_back_test(input, CalculationGroup::from_value)
+        there_and_back_test(&input, CalculationGroup::from_value)
     }
 
     #[test]
@@ -700,7 +737,7 @@ mod tests {
                 "calculationItems": []
             }
         );
-        there_and_back_test(input, CalculationGroup::from_value);
+        there_and_back_test(&input, CalculationGroup::from_value);
     }
 
     fn test_sort<T: Ord + std::fmt::Debug, F>(inputs: [serde_json::Value; 2], f: F)
@@ -819,7 +856,7 @@ mod tests {
             }
         );
 
-        there_and_back_test(input, Table::from_value);
+        there_and_back_test(&input, Table::from_value);
     }
 
     #[test]
@@ -879,6 +916,6 @@ mod tests {
             }
         );
 
-        there_and_back_test(input, Table::from_value);
+        there_and_back_test(&input, Table::from_value);
     }
 }
