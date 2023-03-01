@@ -38,6 +38,9 @@ pub struct Measure {
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub annotations: Option<Vec<Annotation>>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    kpi: Option<Kpi>,
 }
 
 impl Ord for Measure {
@@ -66,6 +69,18 @@ impl RecursiveSort for Measure {
     }
 }
 
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct Kpi {
+    target_expression: String,
+    target_format_string: String,
+    status_graphic: String,
+    status_expression: Expression,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    annotations: Option<Vec<Annotation>>,
+}
+
 #[cfg(test)]
 mod test {
     use serde_json::json;
@@ -87,6 +102,7 @@ mod test {
                 format_string: None,
                 display_folder: None,
                 annotations: None,
+                kpi: None,
             }
         }
     }
@@ -180,6 +196,8 @@ mod test {
                 }
             }
         );
+
+        there_and_back_test(&input, Measure::from_value);
     }
 
     #[test]
@@ -236,5 +254,21 @@ mod test {
         );
 
         there_and_back_test(&kpi, Kpi::from_value);
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_kpi_rejects_unknown_fields() {
+        let kpi = json!(
+            {
+                "targetExpression": "8",
+                "targetFormatString": "0.00",
+                "statusGraphic": "Road Signs",
+                "statusExpression": "One single line",
+                "unknownField": "An unknown field"
+            }
+        );
+
+        Kpi::from_value(&kpi);
     }
 }
