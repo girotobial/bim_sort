@@ -16,13 +16,14 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+use crate::models::Expression;
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct Annotation {
     pub name: String,
-    pub value: String,
+    pub value: Expression,
 }
 
 impl Ord for Annotation {
@@ -39,7 +40,7 @@ impl PartialOrd for Annotation {
 
 #[cfg(test)]
 mod test {
-    use crate::models::test::FromValue;
+    use crate::models::test::{there_and_back_test, FromValue};
     use serde_json::json;
 
     use super::*;
@@ -56,5 +57,30 @@ mod test {
         );
 
         Annotation::from_value(&bad_input);
+    }
+
+    #[test]
+    fn values_can_be_arrays_or_strings() {
+        let input_one = json!(
+            {
+                "name": "A new name",
+                "value": [
+                    "",
+                    "An array value",
+                    ""
+                ]
+            }
+        );
+
+        there_and_back_test(&input_one, Annotation::from_value);
+
+        let input_two = json!(
+            {
+                "name": "Another name",
+                "value": "A string value"
+            }
+        );
+
+        there_and_back_test(&input_two, Annotation::from_value);
     }
 }

@@ -16,10 +16,14 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-use crate::models::expression::{Expression, Expressive};
+use crate::models::{
+    annotations::Annotation,
+    expression::{Expression, Expressive},
+    RecursiveSort,
+};
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct Partition {
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -30,6 +34,9 @@ pub struct Partition {
     pub data_view: Option<String>,
 
     pub source: Source,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    annotations: Option<Vec<Annotation>>,
 }
 
 impl Ord for Partition {
@@ -44,7 +51,15 @@ impl PartialOrd for Partition {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
+impl RecursiveSort for Partition {
+    fn recursive_sort(&mut self) {
+        if let Some(a) = &mut self.annotations {
+            a.sort();
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct Source {
     #[serde(rename = "type")]
@@ -62,6 +77,12 @@ impl Expressive for Source {
 
 #[cfg(test)]
 mod test {
+    use crate::models::{
+        annotations::Annotation,
+        test::{there_and_back_test, FromValue},
+        traits::RecursiveSort,
+    };
+
     use super::{Expression, Partition, Source};
 
     impl Partition {
@@ -71,6 +92,7 @@ mod test {
                 name: name.to_string(),
                 data_view: Some(dataview.to_string()),
                 source,
+                annotations: None,
             }
         }
     }
@@ -95,5 +117,56 @@ mod test {
         ];
         partitions.sort();
         assert_eq!(partitions, expected);
+    }
+
+    #[test]
+    fn test_partitions_can_have_annotations() {
+        let input = serde_json::json!(
+            {
+                "name": "",
+                "source": {
+                    "type": "m",
+                    "expression": ""
+                },
+                "annotations": [
+                    {
+                        "name": "",
+                        "value": ""
+                    }
+                ]
+            }
+        );
+
+        there_and_back_test(&input, Partition::from_value);
+    }
+
+    #[test]
+    fn test_partitions_support_sorting_annotations() {
+        impl Annotation {
+            fn new(name: &str, value: &str) -> Self {
+                Self {
+                    name: name.to_owned(),
+                    value: Expression::String(value.to_owned()),
+                }
+            }
+        }
+
+        let mut partition = Partition::default();
+        let annotations = vec![
+            Annotation::new("ZZZ Annotation", "1"),
+            Annotation::new("BBB", "2"),
+            Annotation::new("AAA", "3"),
+        ];
+
+        let annotations_sorted = {
+            let mut annotations_sorted = annotations.clone();
+            annotations_sorted.sort();
+            annotations_sorted
+        };
+        partition.annotations = Some(annotations);
+
+        partition.recursive_sort();
+
+        assert_eq!(partition.annotations, Some(annotations_sorted));
     }
 }
