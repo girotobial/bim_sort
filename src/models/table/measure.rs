@@ -125,4 +125,21 @@ mod test {
 
         there_and_back_test(&input, Measure::from_value)
     }
+
+    #[test]
+    fn test_measures_can_have_descriptions() {
+        let input = serde_json::json!(
+            {
+                "name": "A measure",
+                "description": "A measure's description",
+                "expression": [
+                    "",
+                    "COUNTROWS(Table)",
+                    ""
+                ],
+            }
+        );
+
+        there_and_back_test(&input, Measure::from_value);
+    }
 }
