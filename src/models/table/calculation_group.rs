@@ -30,6 +30,9 @@ pub(crate) struct CalculationItem {
 
     #[serde(skip_serializing_if = "Option::is_none")]
     ordinal: Option<i32>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    format_string_definition: Option<FormatStringDefinition>,
 }
 
 impl PartialOrd for CalculationItem {
@@ -66,6 +69,11 @@ impl Ord for CalculationItem {
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
+struct FormatStringDefinition {
+    expression: Expression,
+}
+
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub(crate) struct CalculationGroup {
     calculation_items: Vec<CalculationItem>,
@@ -74,5 +82,26 @@ pub(crate) struct CalculationGroup {
 impl RecursiveSort for CalculationGroup {
     fn recursive_sort(&mut self) {
         self.calculation_items.sort();
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::CalculationItem;
+
+    use crate::models::test::{there_and_back_test, FromValue};
+
+    #[test]
+    fn test_calculation_item_has_format_string_definition() {
+        let data = serde_json::json!(
+            {
+                "name": "item with calculation",
+                "formatStringDefinition": {
+                    "expression": "\"0.0%\""
+                }
+            }
+        );
+
+        there_and_back_test(&data, CalculationItem::from_value);
     }
 }
