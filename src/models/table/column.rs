@@ -86,8 +86,43 @@ struct CommonColumn {
     name: String,
     data_type: String,
 
+    #[serde(skip_serializing_if = "DataCategory::is_uncategorized", default)]
+    data_category: DataCategory,
+
     #[serde(skip_serializing_if = "Option::is_none")]
     is_hidden: Option<bool>,
+}
+
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
+#[serde(deny_unknown_fields)]
+enum DataCategory {
+    Uncategorized,
+    Address,
+    City,
+    Continent,
+    Country,
+    County,
+    Image,
+    ImageUrl,
+    Latitude,
+    Longitude,
+    Organization,
+    Place,
+    PostalCode,
+    StateOrProvince,
+    WebUrl,
+}
+
+impl Default for DataCategory {
+    fn default() -> Self {
+        Self::Uncategorized
+    }
+}
+
+impl DataCategory {
+    fn is_uncategorized(&self) -> bool {
+        self.eq(&Self::Uncategorized)
+    }
 }
 
 pub trait Attributes {
@@ -178,9 +213,13 @@ impl Attributes for Sourced {
 
 #[cfg(test)]
 mod tests {
+    use crate::models::test::there_and_back_test;
+    use crate::models::test::FromValue;
+
     use super::Column;
     use super::Expressive;
     use serde_json;
+    use serde_json::json;
 
     #[test]
     fn test_column_with_vec_expression() {
@@ -222,6 +261,7 @@ mod tests {
 
     use super::Calculated;
     use super::CommonColumn;
+    use super::DataCategory;
     use super::Sourced;
 
     impl Column {
@@ -231,6 +271,7 @@ mod tests {
                     name: name.to_string(),
                     data_type: data_type.to_string(),
                     is_hidden: None,
+                    data_category: DataCategory::default(),
                 },
                 type_: "calculated".to_string(),
                 expression: crate::models::Expression::String(expression.to_string()),
@@ -250,6 +291,7 @@ mod tests {
                     name: name.to_string(),
                     data_type: data_type.to_string(),
                     is_hidden: None,
+                    data_category: DataCategory::default(),
                 },
                 source_column: source_column.to_string(),
                 sort_by_column: Some(sort_by_column.to_string()),
@@ -313,5 +355,52 @@ mod tests {
         let output = serde_json::to_string(&column).unwrap();
 
         assert!(output.contains(r#""sortByColumn":"Ordinal""#))
+    }
+
+    #[test]
+    fn columns_have_data_categories() {
+        let column = json!(
+            {
+                "name": "Latitude",
+                "dataType": "decimal",
+                "sourceColumn": "Latitude",
+                "dataCategory": "Latitude"
+            }
+        );
+
+        there_and_back_test(&column, Column::from_value);
+    }
+
+    #[test]
+    fn can_parse_all_data_categories() {
+        let categories = [
+            "Address",
+            "City",
+            "Continent",
+            "Country",
+            "County",
+            "Image",
+            "ImageUrl",
+            "Latitude",
+            "Longitude",
+            "Organization",
+            "Place",
+            "PostalCode",
+            "StateOrProvince",
+            "WebUrl",
+        ];
+
+        for category in categories.into_iter() {
+            let data = json!(
+                {
+                    "name": "ColumnName",
+                    "dataType": "decimal",
+                    "sourceColumn": "Column",
+                    "dataCategory": category
+                }
+            );
+
+            there_and_back_test(&data, Column::from_value)
+        }
     }
 }
