@@ -68,9 +68,13 @@ impl RecursiveSort for Measure {
 
 #[cfg(test)]
 mod test {
+    use serde_json::json;
+
     use super::Expression;
+    use super::Kpi;
     use super::Measure;
     use super::RecursiveSort;
+
     use crate::models::test::{there_and_back_test, FromValue};
 
     impl Measure {
@@ -144,5 +148,93 @@ mod test {
         );
 
         there_and_back_test(&input, Measure::from_value);
+    }
+
+    #[test]
+    fn test_measures_have_kpis() {
+        let input = json!(
+            {
+                "name": "A measure with KPI",
+                "description": "A measure with an included KPI field",
+                "expression": [
+                    "",
+                    "DIVIDE( [Numerator], [Denominator] )"
+                ],
+                "formatString": "0.00",
+                "displayFolder": "A folder",
+                "kpi": {
+                    "targetExpression": "8",
+                    "targetFormatString": "0.00",
+                    "statusGraphic": "Road Signs",
+                    "statusExpression": [
+                        "",
+                        "var x=[Some number] return",
+                        " if ([Some number] > 0, 1, 0) ",
+                    ],
+                    "annotations": [
+                        {
+                        "name": "GoalType",
+                        "value": "StaticValue"
+                        }
+                    ]
+                }
+            }
+        );
+    }
+
+    #[test]
+    fn test_kpi_can_be_read() {
+        let kpi = json!(
+            {
+                "targetExpression": "8",
+                "targetFormatString": "0.00",
+                "statusGraphic": "Road Signs",
+                "statusExpression": [
+                    "",
+                    "var x=[Some number] return",
+                    " if ([Some number] > 0, 1, 0) ",
+                ],
+                "annotations": [
+                    {
+                    "name": "GoalType",
+                    "value": "StaticValue"
+                    }
+                ]
+            }
+        );
+
+        there_and_back_test(&kpi, Kpi::from_value);
+    }
+
+    #[test]
+    fn test_kpi_annotations_are_not_required() {
+        let kpi = json!(
+            {
+                "targetExpression": "8",
+                "targetFormatString": "0.00",
+                "statusGraphic": "Road Signs",
+                "statusExpression": [
+                    "",
+                    "var x=[Some number] return",
+                    " if ([Some number] > 0, 1, 0) ",
+                ],
+            }
+        );
+
+        there_and_back_test(&kpi, Kpi::from_value);
+    }
+
+    #[test]
+    fn test_kpi_status_expression_can_be_single_line() {
+        let kpi = json!(
+            {
+                "targetExpression": "8",
+                "targetFormatString": "0.00",
+                "statusGraphic": "Road Signs",
+                "statusExpression": "One single line"
+            }
+        );
+
+        there_and_back_test(&kpi, Kpi::from_value);
     }
 }
