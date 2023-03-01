@@ -62,6 +62,11 @@ impl Expressive for Source {
 
 #[cfg(test)]
 mod test {
+    use crate::models::{
+        annotations::Annotation,
+        test::{there_and_back_test, FromValue},
+    };
+
     use super::{Expression, Partition, Source};
 
     impl Partition {
@@ -95,5 +100,58 @@ mod test {
         ];
         partitions.sort();
         assert_eq!(partitions, expected);
+    }
+
+    #[test]
+    fn test_partitions_can_have_annotations() {
+        let input = serde_json::json!(
+            {
+                "name": "",
+                "source": {
+                    "type": "m",
+                    "expression": ""
+                },
+                "annotations": [
+                    {
+                        "name": "",
+                        "value": [
+                            ""
+                        ]
+                    }
+                ]
+            }
+        );
+
+        there_and_back_test(&input, Partition::from_value);
+    }
+
+    #[test]
+    fn test_partitions_support_sorting_annotations() {
+        impl Annotation {
+            fn new(name: &str, value: &str) -> Self {
+                Self {
+                    name: name.to_owned(),
+                    value: value.to_owned(),
+                }
+            }
+        }
+
+        let mut partition = Partition::default();
+        let annotations = vec![
+            Annotation::new("ZZZ Annotation", "1"),
+            Annotation::new("BBB", "2"),
+            Annotation::new("AAA", "3"),
+        ];
+
+        let annotations_sorted = {
+            let mut annotations_sorted = annotations.clone();
+            annotations_sorted.sort();
+            annotations_sorted
+        };
+        partition.annotations = Some(annotations);
+
+        partition.recursive_sort();
+
+        assert_eq!(partition.annotations, annotations_sorted);
     }
 }
