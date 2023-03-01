@@ -146,7 +146,7 @@ mod test {
             fn new(name: &str, value: &str) -> Self {
                 Self {
                     name: name.to_owned(),
-                    value: value.to_owned(),
+                    value: Expression::String(value.to_owned()),
                 }
             }
         }
