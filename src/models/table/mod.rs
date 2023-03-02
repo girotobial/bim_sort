@@ -32,8 +32,8 @@ pub struct Table {
 
 impl RecursiveSort for Table {
     fn recursive_sort(&mut self) {
-        self.partitions.sort();
-        self.columns.sort();
+        self.partitions.recursive_sort();
+        self.columns.recursive_sort();
         if let Some(v) = &mut self.measures {
             v.recursive_sort();
         }
