@@ -77,7 +77,7 @@ struct FormatStringDefinition {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub(crate) struct CalculationGroup {
     #[serde(skip_serializing_if = "Option::is_none")]
-    precendence: Option<isize>,
+    precedence: Option<isize>,
     calculation_items: Vec<CalculationItem>,
 }
 
@@ -113,7 +113,7 @@ mod test {
     fn has_precedence_field() {
         let cg = json!(
             {
-                "precendence": 1,
+                "precedence": 1,
                 "calculationItems": []
             }
         );
