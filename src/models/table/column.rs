@@ -26,6 +26,7 @@ use serde::{Deserialize, Serialize};
 pub enum Column {
     Calculated(Calculated),
     Sourced(Sourced),
+    CalculatedTableColumn(CalculatedTableColumn),
 }
 
 impl PartialOrd for Column {
@@ -45,18 +46,21 @@ impl Attributes for Column {
         match self {
             Self::Calculated(c) => c.name(),
             Self::Sourced(c) => c.name(),
+            Self::CalculatedTableColumn(c) => c.name(),
         }
     }
     fn data_type(&self) -> String {
         match self {
             Self::Calculated(c) => c.data_type(),
             Self::Sourced(c) => c.data_type(),
+            Self::CalculatedTableColumn(c) => c.data_type(),
         }
     }
     fn is_hidden(&self) -> bool {
         match self {
             Self::Calculated(c) => c.is_hidden(),
             Self::Sourced(c) => c.is_hidden(),
+            Self::CalculatedTableColumn(c) => c.is_hidden(),
         }
     }
 }
@@ -65,7 +69,7 @@ impl Expressive for Column {
     fn expression(&self) -> Option<String> {
         match self {
             Self::Calculated(c) => c.expression(),
-            Self::Sourced(_) => None,
+            _ => None,
         }
     }
 }
@@ -168,6 +172,35 @@ impl Expressive for Calculated {
 }
 
 impl Attributes for Calculated {
+    fn name(&self) -> String {
+        self.common.name()
+    }
+    fn data_type(&self) -> String {
+        self.common.data_type()
+    }
+    fn is_hidden(&self) -> bool {
+        self.common.is_hidden()
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct CalculatedTableColumn {
+    #[serde(flatten)]
+    common: CommonColumn,
+
+    #[serde(rename = "type")]
+    pub type_: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub is_name_inferred: Option<bool>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub is_data_type_inferred: Option<bool>,
+
+    source_column: String,
+}
+
+impl Attributes for CalculatedTableColumn {
     fn name(&self) -> String {
         self.common.name()
     }
@@ -402,5 +435,21 @@ mod tests {
 
             there_and_back_test(&data, Column::from_value)
         }
+    }
+
+    #[test]
+    fn can_parse_calculated_table_columns() {
+        let data = json!(
+            {
+                "type": "calculatedTableColumn",
+                "name": "Courses Booked",
+                "dataType": "int64",
+                "isNameInferred": true,
+                "isDataTypeInferred": true,
+                "sourceColumn": "[Courses Booked]"
+            }
+        );
+
+        there_and_back_test(&data, Column::from_value);
     }
 }
