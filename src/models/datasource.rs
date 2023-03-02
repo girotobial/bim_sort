@@ -162,7 +162,8 @@ impl Credential for CredentialType {
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct DataSourceOption {
-    return_single_database: bool,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    return_single_database: Option<bool>,
 }
 
 #[cfg(test)]
@@ -404,5 +405,34 @@ mod test {
         );
 
         CredentialType::from_value(&input);
+    }
+
+    #[test]
+    fn allow_empty_datasource_options() {
+        let datasource = json!(
+            {
+                "type": "structured",
+                "name": "SQL/Aserver",
+                "connectionDetails": {
+                    "protocol": "tds",
+                    "address": {
+                        "server": "<serveraddress>",
+                        "database": "A database"
+                    },
+                    "authentication": null,
+                    "query": null
+                },
+                "options": {},
+                "credential": {
+                    "AuthenticationKind": "UsernamePassword",
+                    "kind": "SQL",
+                    "path": "<url>",
+                    "Username": "username",
+                    "EncryptConnection": true
+                }
+            }
+        );
+
+        there_and_back_test(&datasource, DataSource::from_value);
     }
 }
