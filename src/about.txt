@@ -1,0 +1,5 @@
+Bim Sort  Copyright (C) 2022  Alex Robinson
+This program comes with ABSOLUTELY NO WARRANTY; for details type `bim_sort -w'.
+This is free software, and you are welcome to redistribute it
+under certain conditions; type `bim_sort -c' for details.
+
